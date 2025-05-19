@@ -3,7 +3,7 @@ package hand
 import (
 	"testing"
 
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/entity"
 )
 
@@ -11,55 +11,47 @@ func TestCheckCleanDragon(t *testing.T) {
 	cards := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_CLUBS,
-		},
-		{
-			Rank: pb.CardRank_RANK_6,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
-		},
-		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_14,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 
@@ -74,55 +66,55 @@ func TestCheckFullColor(t *testing.T) {
 	cards := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_6,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_5,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
-		},
-		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
+		},
+		{
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 	}
 
@@ -137,55 +129,55 @@ func TestCheckDragon(t *testing.T) {
 	cards := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_6,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_5,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
-		},
-		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
+		},
+		{
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 
@@ -200,55 +192,55 @@ func TestCheckSixPairs(t *testing.T) {
 	cards := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 

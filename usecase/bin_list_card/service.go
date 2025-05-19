@@ -37,8 +37,8 @@ func init() {
 	}
 
 	BitSetColor = make(map[uint8]*bitset.BitSet)
-	BitSetColor[kRed] = BitSetSuitMap[entity.SuitHearts].Union(BitSetSuitMap[entity.SuitDiamonds])
-	BitSetColor[kBlack] = BitSetSuitMap[entity.SuitSpades].Union(BitSetSuitMap[entity.SuitClubs])
+	BitSetColor[kRed] = BitSetSuitMap[entity.SuitCircle].Union(BitSetSuitMap[entity.SuitCross])
+	BitSetColor[kBlack] = BitSetSuitMap[entity.SuitSquare].Union(BitSetSuitMap[entity.SuitTriangle])
 }
 
 type service struct {

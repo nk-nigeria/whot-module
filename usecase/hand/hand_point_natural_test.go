@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ciaolink-game-platform/cgp-chinese-poker-module/entity"
-	pb "github.com/ciaolink-game-platform/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
+	"github.com/nakamaFramework/whot-module/entity"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,56 +20,56 @@ func init() {
 func mockDragon() []*pb.Card {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_HEARTS,
-		},
-		{
-			Rank: pb.CardRank_RANK_6,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_CROSS,
+		},
+		{
+			Rank: pb.CardRank_RANK_7,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_HEARTS,
-		},
-		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CROSS,
+		},
+		{
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CROSS,
 		},
 	}
 	return cards
@@ -100,43 +100,43 @@ func mockFivePair() []*pb.Card {
 	cards := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	return cards
@@ -156,24 +156,24 @@ func mockThreeOfAKind() []*pb.Card {
 func mockJackpot() []*pb.Card {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	return cards
@@ -187,7 +187,7 @@ func TestIsDragonSuccess(t *testing.T) {
 
 func TestIsDragonFail(t *testing.T) {
 	cards := mockDragon()
-	cards[4].Rank = pb.CardRank_RANK_K
+	cards[4].Rank = pb.CardRank_RANK_13
 	listCard := entity.NewListCard(cards)
 	handCard, isDragon := CheckDragon(entity.NewBinListCards(listCard))
 	assert.Equal(t, false, isDragon)
@@ -197,7 +197,7 @@ func TestIsDragonFail(t *testing.T) {
 func TestIsCleanDragonSuccess(t *testing.T) {
 	cards := mockDragon()
 	for idx, _ := range cards {
-		cards[idx].Suit = pb.CardSuit_SUIT_HEARTS
+		cards[idx].Suit = pb.CardSuit_SUIT_CROSS
 	}
 	listCard := entity.NewListCard(cards)
 	handCard, isCleanDragon := CheckCleanDragon(entity.NewBinListCards(listCard))
@@ -216,7 +216,7 @@ func TestIsCleanDragonFailed(t *testing.T) {
 func TestIsFullColoredSuccess(t *testing.T) {
 	cards := mockDragon()
 	for idx, _ := range cards {
-		cards[idx].Suit = pb.CardSuit_SUIT_HEARTS
+		cards[idx].Suit = pb.CardSuit_SUIT_CROSS
 	}
 	cards[10].Rank = pb.CardRank_RANK_2
 	listCard := entity.NewListCard(cards)
@@ -240,7 +240,7 @@ func TestIsSixPairSuccess(t *testing.T) {
 	cards = append(cards, mockPair(0, 0)...)
 	cards = append(cards, &pb.Card{
 		Rank: pb.CardRank_RANK_10,
-		Suit: pb.CardSuit_SUIT_DIAMONDS,
+		Suit: pb.CardSuit_SUIT_TRIANGLE,
 	})
 	listCard := entity.NewListCard(cards)
 	handCard, isvalid := CheckSixPairs(entity.NewBinListCards(listCard))

@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/api/presenter"
 	"github.com/nakamaFramework/whot-module/cgbdb"
 	"github.com/nakamaFramework/whot-module/entity"
@@ -52,7 +52,7 @@ func (m *MatchHandler) MatchSignal(ctx context.Context, logger runtime.Logger, d
 
 func NewMatchHandler(marshaler *protojson.MarshalOptions, unmarshaler *protojson.UnmarshalOptions) *MatchHandler {
 	return &MatchHandler{
-		processor: processor.NewMatchProcessor(marshaler, unmarshaler, engine.NewChinesePokerEngine()),
+		processor: processor.NewMatchProcessor(marshaler, unmarshaler, engine.NewWhotPokerEngine()),
 		machine:   gsm.NewGameStateMachine(),
 	}
 }

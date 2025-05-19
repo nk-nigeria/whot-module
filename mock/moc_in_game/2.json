@@ -1,0 +1,16 @@
+{
+    "name": "Mock 2",
+    "id": 2,
+    "input": {
+        "cards": [
+            {
+                "userId": "1",
+                "card": "8c;qh;4c; 5d;7c;kc;8h;kd; qs;4h;js;7h;jh"
+            },
+            {
+                "userId": "2",
+                "card": "4h;5h;6d; "
+            }
+        ]
+    }
+}

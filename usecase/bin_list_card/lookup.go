@@ -90,7 +90,7 @@ func isNextStraight(c1, c2 entity.Card) bool {
 		return true
 	}
 
-	if c2.GetRank() == entity.RankA && c1.GetRank() == entity.Rank5 {
+	if c2.GetRank() == entity.Ranks[0] && c1.GetRank() == entity.Ranks[5] {
 		return true
 	}
 

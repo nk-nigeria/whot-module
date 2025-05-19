@@ -3,7 +3,7 @@ package hand
 import (
 	"testing"
 
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/entity"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,57 +13,57 @@ func mockHand1() (*Hand, error) {
 		Cards: []*pb.Card{
 			{
 				Rank: pb.CardRank_RANK_3,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_CIRCLE,
 			},
 			{
 				Rank: pb.CardRank_RANK_4,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_CROSS,
 			},
 			{
 				Rank: pb.CardRank_RANK_5,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_SQUARE,
 			},
 
 			{
 				Rank: pb.CardRank_RANK_2,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_STAR,
 			},
 			{
 				Rank: pb.CardRank_RANK_2,
-				Suit: pb.CardSuit_SUIT_HEARTS,
+				Suit: pb.CardSuit_SUIT_TRIANGLE,
 			},
 			{
 				Rank: pb.CardRank_RANK_2,
-				Suit: pb.CardSuit_SUIT_SPADES,
+				Suit: pb.CardSuit_SUIT_CIRCLE,
 			},
 			{
 				Rank: pb.CardRank_RANK_2,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
-			},
-			{
-				Rank: pb.CardRank_RANK_6,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
-			},
-
-			{
-				Rank: pb.CardRank_RANK_6,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_CROSS,
 			},
 			{
 				Rank: pb.CardRank_RANK_7,
-				Suit: pb.CardSuit_SUIT_HEARTS,
+				Suit: pb.CardSuit_SUIT_SQUARE,
+			},
+
+			{
+				Rank: pb.CardRank_RANK_7,
+				Suit: pb.CardSuit_SUIT_TRIANGLE,
+			},
+			{
+				Rank: pb.CardRank_RANK_7,
+				Suit: pb.CardSuit_SUIT_STAR,
 			},
 			{
 				Rank: pb.CardRank_RANK_8,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
+				Suit: pb.CardSuit_SUIT_TRIANGLE,
 			},
 			{
-				Rank: pb.CardRank_RANK_9,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
+				Rank: pb.CardRank_RANK_11,
+				Suit: pb.CardSuit_SUIT_CIRCLE,
 			},
 			{
 				Rank: pb.CardRank_RANK_10,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
+				Suit: pb.CardSuit_SUIT_CROSS,
 			},
 		},
 	})
@@ -75,57 +75,57 @@ func mockHand2() (*Hand, error) {
 			// Front
 			{
 				Rank: pb.CardRank_RANK_3,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_CROSS,
 			},
 			{
 				Rank: pb.CardRank_RANK_4,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_CROSS,
 			},
 			{
 				Rank: pb.CardRank_RANK_5,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_CROSS,
 			},
 			// Middle
 			{
 				Rank: pb.CardRank_RANK_3,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_CROSS,
 			},
 			{
 				Rank: pb.CardRank_RANK_3,
-				Suit: pb.CardSuit_SUIT_HEARTS,
+				Suit: pb.CardSuit_SUIT_CIRCLE,
 			},
 			{
 				Rank: pb.CardRank_RANK_3,
-				Suit: pb.CardSuit_SUIT_SPADES,
+				Suit: pb.CardSuit_SUIT_STAR,
 			},
 			{
 				Rank: pb.CardRank_RANK_3,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
-			},
-			{
-				Rank: pb.CardRank_RANK_6,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
-			},
-			// Back
-			{
-				Rank: pb.CardRank_RANK_6,
-				Suit: pb.CardSuit_SUIT_CLUBS,
+				Suit: pb.CardSuit_SUIT_TRIANGLE,
 			},
 			{
 				Rank: pb.CardRank_RANK_7,
-				Suit: pb.CardSuit_SUIT_HEARTS,
+				Suit: pb.CardSuit_SUIT_TRIANGLE,
+			},
+			// Back
+			{
+				Rank: pb.CardRank_RANK_14,
+				Suit: pb.CardSuit_SUIT_SQUARE,
+			},
+			{
+				Rank: pb.CardRank_RANK_7,
+				Suit: pb.CardSuit_SUIT_TRIANGLE,
 			},
 			{
 				Rank: pb.CardRank_RANK_8,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
+				Suit: pb.CardSuit_SUIT_CROSS,
 			},
 			{
-				Rank: pb.CardRank_RANK_9,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
+				Rank: pb.CardRank_RANK_12,
+				Suit: pb.CardSuit_SUIT_TRIANGLE,
 			},
 			{
 				Rank: pb.CardRank_RANK_10,
-				Suit: pb.CardSuit_SUIT_DIAMONDS,
+				Suit: pb.CardSuit_SUIT_STAR,
 			},
 		},
 	})
@@ -174,15 +174,15 @@ func TestCheck(t *testing.T) {
 	unsortCard := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 
@@ -192,23 +192,23 @@ func TestCheck(t *testing.T) {
 	cards := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 
@@ -233,23 +233,23 @@ func TestCheck(t *testing.T) {
 	fourOfAKindCards := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 
@@ -262,23 +262,23 @@ func TestCheck(t *testing.T) {
 	fullHouseCards := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 
@@ -293,23 +293,23 @@ func TestTwoPair(t *testing.T) {
 	cards := []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 
@@ -325,47 +325,47 @@ func TestTwoPair(t *testing.T) {
 func TestCompareBasicStraightFlushVsStraightFlushDraw(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -378,47 +378,47 @@ func TestCompareBasicStraightFlushVsStraightFlushDraw(t *testing.T) {
 func TestCompareBasicStraightFlushHigherStraightFlush(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -431,47 +431,47 @@ func TestCompareBasicStraightFlushHigherStraightFlush(t *testing.T) {
 func TestCompareBasicStraightFlushLowerStraightFlushLower(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -483,47 +483,47 @@ func TestCompareBasicStraightFlushLowerStraightFlushLower(t *testing.T) {
 func TestCompareBasicStraightFlushVsFourOfAKind(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -535,47 +535,47 @@ func TestCompareBasicStraightFlushVsFourOfAKind(t *testing.T) {
 func TestCompareBasicStraightFlushVsFullhouse(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -587,47 +587,47 @@ func TestCompareBasicStraightFlushVsFullhouse(t *testing.T) {
 func TestCompareBasicStraightFlushVsFlush(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -639,47 +639,47 @@ func TestCompareBasicStraightFlushVsFlush(t *testing.T) {
 func TestCompareBasicStraightFlushVsStraight(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_7,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -691,47 +691,47 @@ func TestCompareBasicStraightFlushVsStraight(t *testing.T) {
 func TestCompareBasicStraightFlushVsThreeOfAKind(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -743,47 +743,47 @@ func TestCompareBasicStraightFlushVsThreeOfAKind(t *testing.T) {
 func TestCompareBasicStraightFlushVsTwoPair(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
-		},
-		{
-			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_STAR,
+		},
+		{
+			Rank: pb.CardRank_RANK_8,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -795,47 +795,47 @@ func TestCompareBasicStraightFlushVsTwoPair(t *testing.T) {
 func TestCompareBasicStraightFlushVsPair(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -847,47 +847,47 @@ func TestCompareBasicStraightFlushVsPair(t *testing.T) {
 func TestCompareBasicStraightFlushVsHighCard(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -900,47 +900,47 @@ func TestCompareBasicStraightFlushVsHighCard(t *testing.T) {
 func TestCompareFourOfAKindVsFourOfAKind(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -952,47 +952,47 @@ func TestCompareFourOfAKindVsFourOfAKind(t *testing.T) {
 func TestCompareFourOfAKindVsFullHouse(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
-		},
-		{
-			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
+		},
+		{
+			Rank: pb.CardRank_RANK_2,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1004,47 +1004,47 @@ func TestCompareFourOfAKindVsFullHouse(t *testing.T) {
 func TestCompareFlushVsFlushHigher(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_6,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_5,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1057,47 +1057,47 @@ func TestCompareFlushVsFlushHigher(t *testing.T) {
 func TestCompareStraightVsStraightNoACardEqual(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1108,47 +1108,47 @@ func TestCompareStraightVsStraightNoACardEqual(t *testing.T) {
 func TestCompareStraightVsStraightNoACardHigher(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_8,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1161,47 +1161,47 @@ func TestCompareStraightVsStraightNoACardHigher(t *testing.T) {
 func TestCompareStraightVsStraightContainACardEqual(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1214,47 +1214,47 @@ func TestCompareStraightVsStraightContainACardEqual(t *testing.T) {
 func TestCompareStraightVsStraightContainACardNotCardKLower(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_3,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_6,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_2,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1267,47 +1267,47 @@ func TestCompareStraightVsStraightContainACardNotCardKLower(t *testing.T) {
 func TestCompareStraightVsStraightContainACardKCard(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1319,47 +1319,47 @@ func TestCompareStraightVsStraightContainACardKCard(t *testing.T) {
 func TestCompareThreeOfAKindVsThreeOfAKind(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_9,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_10,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1371,47 +1371,47 @@ func TestCompareThreeOfAKindVsThreeOfAKind(t *testing.T) {
 func TestCompareTwoPairVsTwoPairDraw(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1423,47 +1423,47 @@ func TestCompareTwoPairVsTwoPairDraw(t *testing.T) {
 func TestCompareTwoPairVsTwoPairHigher1(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_K,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_13,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1475,47 +1475,47 @@ func TestCompareTwoPairVsTwoPairHigher1(t *testing.T) {
 func TestCompareTwoPairVsTwoPairHigher2(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_HEARTS,
-		},
-		{
-			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
+		},
+		{
+			Rank: pb.CardRank_RANK_2,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1527,47 +1527,47 @@ func TestCompareTwoPairVsTwoPairHigher2(t *testing.T) {
 func TestCompareTwoPairVsTwoPairHigher3(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1579,47 +1579,47 @@ func TestCompareTwoPairVsTwoPairHigher3(t *testing.T) {
 func TestComparePairVsPair(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1631,47 +1631,47 @@ func TestComparePairVsPair(t *testing.T) {
 func TestComparePairVsPairHigher(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_J,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_11,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1683,47 +1683,47 @@ func TestComparePairVsPairHigher(t *testing.T) {
 func TestCompareHighCardVsHighCard(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
@@ -1734,52 +1734,50 @@ func TestCompareHighCardVsHighCard(t *testing.T) {
 func TestCompareHighCardVsHighCardHigher(t *testing.T) {
 	cards := []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_DIAMONDS,
+			Suit: pb.CardSuit_SUIT_STAR,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_5,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 	}
 	strainghtFlush1 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	cards = []*pb.Card{
 		{
-			Rank: pb.CardRank_RANK_A,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Rank: pb.CardRank_RANK_1,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
-			Rank: pb.CardRank_RANK_Q,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Rank: pb.CardRank_RANK_12,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 		{
 			Rank: pb.CardRank_RANK_10,
-			Suit: pb.CardSuit_SUIT_SPADES,
+			Suit: pb.CardSuit_SUIT_TRIANGLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_4,
-			Suit: pb.CardSuit_SUIT_CLUBS,
+			Suit: pb.CardSuit_SUIT_CIRCLE,
 		},
 		{
 			Rank: pb.CardRank_RANK_2,
-			Suit: pb.CardSuit_SUIT_HEARTS,
+			Suit: pb.CardSuit_SUIT_SQUARE,
 		},
 	}
 	strainghtFlush2 := NewChildHand(entity.NewListCard(cards), kBackHand)
 	point := strainghtFlush1.Compare(strainghtFlush2)
 	assert.Equal(t, int(1), point)
 }
-
-//

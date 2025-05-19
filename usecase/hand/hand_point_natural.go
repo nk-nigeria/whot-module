@@ -1,7 +1,7 @@
 package hand
 
 import (
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/entity"
 	blc "github.com/nakamaFramework/whot-module/usecase/bin_list_card"
 )
@@ -143,7 +143,7 @@ func CheckJackpot(childHand *ChildHand) bool {
 	if card[0].GetRank() != entity.Rank10 {
 		return false
 	}
-	if card[0].GetSuit() != entity.SuitSpades {
+	if card[0].GetSuit() != entity.SuitCircle {
 		return false
 	}
 	bcards := entity.NewBinListCards(childHand.Cards)

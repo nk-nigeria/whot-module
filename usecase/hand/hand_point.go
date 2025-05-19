@@ -3,7 +3,7 @@ package hand
 import (
 	"fmt"
 
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/entity"
 	"github.com/nakamaFramework/whot-module/pkg/log"
 	blc "github.com/nakamaFramework/whot-module/usecase/bin_list_card"

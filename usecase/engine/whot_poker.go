@@ -2,7 +2,7 @@ package engine
 
 import (
 	combinations "github.com/mxschmitt/golang-combinations"
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/entity"
 	mockcodegame "github.com/nakamaFramework/whot-module/mock_code_game"
 	"github.com/nakamaFramework/whot-module/pkg/log"

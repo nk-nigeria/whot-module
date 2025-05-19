@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/pkg/packager"
 	"github.com/qmuntal/stateless"
 )

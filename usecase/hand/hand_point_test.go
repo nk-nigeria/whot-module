@@ -10,10 +10,10 @@ import (
 func mockHighCard() *entity.BinListCard {
 	return entity.NewBinListCards(entity.ListCard{
 		entity.Card5C,
-		entity.Card9D,
-		entity.Card7H,
+		entity.Card10R,
+		entity.Card7S,
 		entity.Card10C,
-		entity.Card2H,
+		entity.Card11R,
 	})
 }
 
@@ -41,9 +41,9 @@ func TestCheckStraightFlush(t *testing.T) {
 func mockFourOfAKindSuccess() *entity.BinListCard {
 	return entity.NewBinListCards(entity.ListCard{
 		entity.Card5C,
-		entity.Card5D,
+		entity.Card5R,
 		entity.Card5S,
-		entity.Card5H,
+		entity.Card5T,
 		entity.Card9C,
 	})
 }
@@ -62,9 +62,9 @@ func TestCheckFourOfAKind(t *testing.T) {
 func mockFullHouseSuccess() *entity.BinListCard {
 	return entity.NewBinListCards(entity.ListCard{
 		entity.Card3C,
-		entity.Card3D,
+		entity.Card3S,
 		entity.Card2S,
-		entity.Card2H,
+		entity.Card2T,
 		entity.Card2C,
 	})
 }
@@ -86,7 +86,7 @@ func mockFlushSuccess() *entity.BinListCard {
 		entity.Card5C,
 		entity.Card7C,
 		entity.Card9C,
-		entity.CardJC,
+		entity.Card11C,
 	})
 }
 
@@ -104,7 +104,7 @@ func TestFlush(t *testing.T) {
 func mockStraightSuccess() *entity.BinListCard {
 	return entity.NewBinListCards(entity.ListCard{
 		entity.Card3C,
-		entity.Card4H,
+		entity.Card4X,
 		entity.Card5S,
 		entity.Card6C,
 		entity.Card7S,
@@ -113,8 +113,8 @@ func mockStraightSuccess() *entity.BinListCard {
 
 func mockStraightSuccess2() *entity.BinListCard {
 	return entity.NewBinListCards(entity.ListCard{
-		entity.CardAC,
-		entity.Card2H,
+		entity.Card1S,
+		entity.Card2T,
 		entity.Card3S,
 		entity.Card4C,
 		entity.Card5S,
@@ -138,7 +138,7 @@ func TestStraight(t *testing.T) {
 func mockThreeOfAKindSuccess() *entity.BinListCard {
 	return entity.NewBinListCards(entity.ListCard{
 		entity.Card3C,
-		entity.Card3H,
+		entity.Card3X,
 		entity.Card3S,
 		entity.Card6C,
 		entity.Card7S,
@@ -159,7 +159,7 @@ func TestThreeOfAKind(t *testing.T) {
 func mockTwoPairsSuccess() *entity.BinListCard {
 	return entity.NewBinListCards(entity.ListCard{
 		entity.Card3C,
-		entity.Card3H,
+		entity.Card3X,
 		entity.Card4S,
 		entity.Card4C,
 		entity.Card7S,
@@ -180,7 +180,7 @@ func TestTwoPairs(t *testing.T) {
 func mockPairSuccess() *entity.BinListCard {
 	return entity.NewBinListCards(entity.ListCard{
 		entity.Card3C,
-		entity.Card3H,
+		entity.Card3X,
 		entity.Card4S,
 		entity.Card5C,
 		entity.Card7S,
