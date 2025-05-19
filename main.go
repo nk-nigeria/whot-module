@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"time"
 
-	// "github.com/nakamaFramework/whot-module/constant"
-	// "github.com/nakamaFramework/whot-module/message_queue"
-	// mockcodegame "github.com/nakamaFramework/whot-module/mock_code_game"
+	"github.com/nakamaFramework/whot-module/constant"
+	"github.com/nakamaFramework/whot-module/message_queue"
+	mockcodegame "github.com/nakamaFramework/whot-module/mock_code_game"
 
 	"github.com/heroiclabs/nakama-common/runtime"
 	"github.com/nakamaFramework/whot-module/entity"
@@ -34,8 +34,8 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 	unmarshaler := &protojson.UnmarshalOptions{
 		DiscardUnknown: false,
 	}
-	// message_queue.InitNatsService(logger, constant.NastEndpoint, marshaler)
-	// mockcodegame.InitMapMockCodeListCard()
+	message_queue.InitNatsService(logger, constant.NastEndpoint, marshaler)
+	mockcodegame.InitMapMockCodeListCard()
 	if err := initializer.RegisterMatch(entity.ModuleName, func(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule) (runtime.Match, error) {
 		return api.NewMatchHandler(marshaler, unmarshaler), nil
 	}); err != nil {
