@@ -1,21 +1,20 @@
-{
-    "name": "Mock 1",
-    "id": 1,
-    "input": {
-        "cards": [
-            {
-                "userId": "1",
-                "card": "jh;9c;js;5d;7h;7s;2d;2s;8d;8c;8s;8h;4h"
-            },
-            {
-                "userId": "2",
-                "card": "1h;1d;kc; 4d;4s;6h;6d;7s; 7d;10s;10h;js;jh"
-            },
-            {
-                "userId": "3",
-                "card": "1h;10h;kc; 8h;6h;8s;10d;2d; 5d;ks;qd;jh;5c"
-            }
-
-        ]
-    }
+{ 
+  "name": "Mock 1",
+  "id": 1,
+  "input": {
+    "cards": [
+      {
+        "userId": "1",
+        "card": "5c;7x;13s;2t;2q;8c;8s;8t;8q;4q;7x;11c;20w"
+      },
+      {
+        "userId": "2",
+        "card": "1c;1t;13x;4t;4s;8c;2t;7x;7t;10s;10q;13s;11c"
+      },
+      {
+        "userId": "3",
+        "card": "1c;10q;13x;8q;7c;8s;10t;2t;5t;13s;14q;11c;5q"
+      }
+    ]
+  }
 }

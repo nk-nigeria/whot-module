@@ -1,8 +1,11 @@
 package entity
 
 import (
-	"log"
+	"fmt"
 	"testing"
+
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
+	"google.golang.org/protobuf/proto"
 )
 
 var deck *Deck
@@ -16,67 +19,68 @@ func GetDeck() *Deck {
 
 func TestShuffle(t *testing.T) {
 	deck := GetDeck()
-	t.Logf("deck total %v", len(deck.Cards.GetCards()))
-	t.Logf("deck detail")
-	for _, card := range deck.Cards.GetCards() {
-		t.Logf("card %v", card)
-	}
+	originalCards := make([]*pb.Card, len(deck.Cards.Cards))
+	copy(originalCards, deck.Cards.Cards)
 
-	originDeck := *deck
+	// Shuffle deck
 	deck.Shuffle()
 
-	for _, card := range deck.Cards.GetCards() {
-		for _, oriCard := range originDeck.Cards.GetCards() {
-			if card != oriCard {
-				log.Fatalf("Detect difference %v with %v", card, oriCard)
-				continue
-			}
+	// 1. Kiểm tra số lượng bài không đổi
+	if len(originalCards) != len(deck.Cards.Cards) {
+		t.Fatalf("❌ Số lượng lá bài thay đổi sau khi xáo")
+	}
+
+	// 2. Kiểm tra tất cả lá bài vẫn còn (không bị thiếu, thừa, hoặc sai)
+	cardCount := make(map[string]int)
+	for _, card := range originalCards {
+		key := fmt.Sprintf("%v-%v", card.Rank, card.Suit)
+		cardCount[key]++
+	}
+	for _, card := range deck.Cards.Cards {
+		key := fmt.Sprintf("%v-%v", card.Rank, card.Suit)
+		cardCount[key]--
+		if cardCount[key] < 0 {
+			t.Fatalf("❌ Lá bài dư hoặc không tồn tại: %v", key)
 		}
+	}
+
+	// 3. Kiểm tra xem thứ tự đã thay đổi chưa
+	sameOrder := true
+	for i := range originalCards {
+		if !proto.Equal(originalCards[i], deck.Cards.Cards[i]) {
+			sameOrder = false
+			break
+		}
+	}
+	if sameOrder {
+		t.Logf("⚠️ Cảnh báo: Thứ tự bài không thay đổi sau khi xáo (có thể hiếm khi xảy ra)")
+	} else {
+		t.Logf("✅ Thứ tự bài đã được thay đổi sau khi xáo")
 	}
 }
 
 func TestDeal(t *testing.T) {
 	deck := GetDeck()
 	deck.Shuffle()
-	cards1, err := deck.Deal(13)
-	if err != nil {
-		t.Errorf("deal1 error %v", err)
+
+	players := 4
+	cardsPerPlayer := 4
+
+	for i := 0; i < players; i++ {
+		cards, err := deck.Deal(cardsPerPlayer)
+		if err != nil {
+			t.Fatalf("❌ deal for player %d error: %v", i+1, err)
+		}
+		if len(cards.GetCards()) != cardsPerPlayer {
+			t.Errorf("❌ player %d nhận không đủ bài, expected %d, got %d", i+1, cardsPerPlayer, len(cards.GetCards()))
+		}
+		t.Logf("✅ Player %d nhận: %v", i+1, cards.GetCards())
 	}
 
-	if deck.Dealt != 13 {
-		t.Errorf("bad dealt")
-	}
-
-	t.Logf("deal1 result %v, dealt %v", cards1.GetCards(), deck.Dealt)
-
-	cards2, err := deck.Deal(13)
-	if err != nil {
-		t.Errorf("deal2 error %v", err)
-	}
-
-	if deck.Dealt != 26 {
-		t.Errorf("bad dealt")
-	}
-
-	t.Logf("deal2 result %v, dealt %v", cards2.GetCards(), deck.Dealt)
-
-	cards3, err := deck.Deal(13)
-	if err != nil {
-		t.Errorf("deal3 error %v", err)
-	}
-	t.Logf("deal3 result %v, dealt %v", cards3.GetCards(), deck.Dealt)
-
-	if deck.Dealt != 39 {
-		t.Errorf("bad dealt")
-	}
-
-	cards4, err := deck.Deal(13)
-	if err != nil {
-		t.Errorf("deal4 error %v", err)
-	}
-	t.Logf("deal4 result %v, dealt %v", cards4.GetCards(), deck.Dealt)
-
-	if deck.Dealt != 52 {
-		t.Errorf("bad dealt")
+	expectedDealt := players * cardsPerPlayer
+	if deck.Dealt != expectedDealt {
+		t.Errorf("❌ Sai số lượng bài đã chia. Expected %d, got %d", expectedDealt, deck.Dealt)
+	} else {
+		t.Logf("✅ Tổng số bài đã chia đúng: %d", deck.Dealt)
 	}
 }

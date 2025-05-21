@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	log "github.com/nakamaFramework/whot-module/pkg/log"
 	"github.com/nakamaFramework/whot-module/pkg/packager"
 )

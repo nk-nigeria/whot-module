@@ -2,10 +2,12 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
 	"github.com/heroiclabs/nakama-common/runtime"
+	_ "github.com/lib/pq"
 	"github.com/nakamaFramework/whot-module/mock"
 	"github.com/nakamaFramework/whot-module/pkg/log"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -37,7 +39,17 @@ func TestMatch(t *testing.T) {
 	logger := log.GetLogger()
 	dispatcher := mock.MockDispatcher{}
 	nk := mock.MockModule{}
-	s, _, _ := m.MatchInit(nil, logger, nil, nil, params)
+	connStr := "postgresql://postgres:localdb@127.0.0.1/nakama?sslmode=disable"
+	mdb, err := sql.Open("postgres", connStr)
+	if err != nil {
+		t.Logf("failed to open db: %v", err)
+	}
+
+	if err := mdb.Ping(); err != nil {
+		t.Logf("failed to connect to db: %v", err)
+	}
+	defer mdb.Close()
+	s, _, _ := m.MatchInit(context.Background(), logger, mdb, nil, params)
 
 	ctx := context.TODO()
 
@@ -45,7 +57,7 @@ func TestMatch(t *testing.T) {
 	var stop = make(chan bool)
 	go func() {
 		t.Logf("start mock loop")
-		for i := 0; i < 2*120; i++ {
+		for i := 0; i < 2*15; i++ {
 			t.Logf("log %d", i)
 			time.Sleep(time.Millisecond * 500)
 			m.MatchLoop(ctx, logger, nil, &nk, dispatcher, 0, s, nil)
@@ -63,14 +75,14 @@ func TestMatch(t *testing.T) {
 			UserId: "user1",
 		}
 
-		m.MatchJoin(nil, logger, nil, &nk, dispatcher, 0, s, presences)
+		m.MatchJoin(ctx, logger, mdb, &nk, dispatcher, 0, s, presences)
 
 		time.Sleep(time.Second * 2)
 		presences = make([]runtime.Presence, 1)
 		presences[0] = &mock.MockPresence{
 			UserId: "user2",
 		}
-		m.MatchJoin(nil, logger, nil, &nk, dispatcher, 0, s, presences)
+		m.MatchJoin(ctx, logger, mdb, &nk, dispatcher, 0, s, presences)
 	}()
 
 	t.Logf("wait for finish")

@@ -13,11 +13,27 @@ import (
 type MockModule struct {
 }
 
+func (m *MockModule) GetFleetManager() runtime.FleetManager {
+	panic("implement me")
+}
+
 func (m *MockModule) GetSatori() runtime.Satori {
 	panic("implement me")
 }
 
+func (m *MockModule) FriendMetadataUpdate(ctx context.Context, userID string, friendUserId string, metadata map[string]any) error {
+	panic("implement me")
+}
+
 func (m MockModule) FriendsBlock(ctx context.Context, userID string, username string, ids []string, usernames []string) error {
+	panic("implement me")
+}
+
+func (m MockModule) CronPrev(expression string, timestamp int64) (int64, error) {
+	panic("implement me")
+}
+
+func (m MockModule) CronNext(expression string, timestamp int64) (int64, error) {
 	panic("implement me")
 }
 
@@ -64,7 +80,7 @@ func (m MockModule) PurchaseValidateHuawei(ctx context.Context, userID, signatur
 	panic("implement me")
 }
 
-func (m MockModule) TournamentCreate(ctx context.Context, id string, authoritative bool, sortOrder, operator, resetSchedule string, metadata map[string]interface{}, title, description string, category, startTime, endTime, duration, maxSize, maxNumScore int, joinRequired bool) error {
+func (m MockModule) TournamentCreate(ctx context.Context, id string, authoritative bool, sortOrder, operator, resetSchedule string, metadata map[string]interface{}, title, description string, category, startTime, endTime, duration, maxSize, maxNumScore int, joinRequired, enableRanks bool) error {
 	panic("implement me")
 }
 
@@ -72,7 +88,11 @@ func (m MockModule) GroupUsersBan(ctx context.Context, callerID, groupID string,
 	panic("implement me")
 }
 
-func (m MockModule) FriendsAdd(ctx context.Context, userID string, username string, ids []string, usernames []string) error {
+func (m MockModule) FriendsOfFriendsList(ctx context.Context, userID string, limit int, cursor string) ([]*api.FriendsOfFriendsList_FriendOfFriend, string, error) {
+	panic("implement me")
+}
+
+func (m MockModule) FriendsAdd(ctx context.Context, userID string, username string, ids []string, usernames []string, metadata map[string]any) error {
 	panic("implement me")
 }
 
@@ -304,6 +324,18 @@ func (m MockModule) MatchList(ctx context.Context, limit int, authoritative bool
 	panic("implement me")
 }
 
+func (m MockModule) NotificationsGetId(ctx context.Context, userID string, ids []string) ([]*runtime.Notification, error) {
+	panic("implement me")
+}
+
+func (m MockModule) NotificationsUpdate(ctx context.Context, updates ...runtime.NotificationUpdate) error {
+	panic("implement me")
+}
+
+func (m MockModule) NotificationsList(ctx context.Context, userID string, limit int, cursor string) ([]*api.Notification, string, error) {
+	panic("implement me")
+}
+
 func (m MockModule) NotificationSend(ctx context.Context, userID, subject string, content map[string]interface{}, code int, sender string, persistent bool) error {
 	panic("implement me")
 }
@@ -313,6 +345,10 @@ func (m MockModule) NotificationsSend(ctx context.Context, notifications []*runt
 }
 
 func (m MockModule) NotificationsDelete(ctx context.Context, notifications []*runtime.NotificationDelete) error {
+	panic("implement me")
+}
+
+func (m MockModule) NotificationsDeleteId(ctx context.Context, userID string, ids []string) error {
 	panic("implement me")
 }
 
@@ -351,6 +387,14 @@ func (m MockModule) SubscriptionValidateGoogle(ctx context.Context, userID, rece
 	panic("implement me")
 }
 
+func (m MockModule) StatusFollow(sessionID string, userIDs []string) error {
+	panic("implement me")
+}
+
+func (m MockModule) StatusUnfollow(sessionID string, userIDs []string) error {
+	panic("implement me")
+}
+
 func (m MockModule) SubscriptionsList(ctx context.Context, userID string, limit int, cursor string) (*api.SubscriptionList, error) {
 	panic("implement me")
 }
@@ -371,11 +415,15 @@ func (m MockModule) StorageDelete(ctx context.Context, deletes []*runtime.Storag
 	panic("implement me")
 }
 
-func (m MockModule) MultiUpdate(ctx context.Context, accountUpdates []*runtime.AccountUpdate, storageWrites []*runtime.StorageWrite, walletUpdates []*runtime.WalletUpdate, updateLedger bool) ([]*api.StorageObjectAck, []*runtime.WalletUpdateResult, error) {
+func (m MockModule) MultiUpdate(ctx context.Context, accountUpdates []*runtime.AccountUpdate, storageWrites []*runtime.StorageWrite, storageDeletes []*runtime.StorageDelete, walletUpdates []*runtime.WalletUpdate, updateLedger bool) ([]*api.StorageObjectAck, []*runtime.WalletUpdateResult, error) {
 	panic("implement me")
 }
 
-func (m MockModule) LeaderboardCreate(ctx context.Context, id string, authoritative bool, sortOrder, operator, resetSchedule string, metadata map[string]interface{}) error {
+func (m MockModule) LeaderboardCreate(ctx context.Context, id string, authoritative bool, sortOrder, operator, resetSchedule string, metadata map[string]interface{}, enableRanks bool) error {
+	panic("implement me")
+}
+
+func (m MockModule) LeaderboardRanksDisable(ctx context.Context, id string) error {
 	panic("implement me")
 }
 
@@ -415,7 +463,7 @@ func (m MockModule) PurchaseValidateFacebookInstant(ctx context.Context, userID,
 	panic("implement me")
 }
 
-func (m *MockModule) StorageIndexList(ctx context.Context, collection, indexName, query string, limit int) (*api.StorageObjects, error) {
+func (m *MockModule) StorageIndexList(ctx context.Context, callerID, indexName, query string, limit int, order []string, cursor string) (*api.StorageObjects, string, error) {
 	panic("implement me")
 }
 
@@ -440,6 +488,10 @@ func (m MockModule) TournamentsGetId(ctx context.Context, tournamentIDs []string
 }
 
 func (m MockModule) TournamentList(ctx context.Context, categoryStart, categoryEnd, startTime, endTime, limit int, cursor string) (*api.TournamentList, error) {
+	panic("implement me")
+}
+
+func (m MockModule) TournamentRanksDisable(ctx context.Context, id string) error {
 	panic("implement me")
 }
 
@@ -528,5 +580,9 @@ func (m MockModule) MetricsGaugeSet(name string, tags map[string]string, value f
 }
 
 func (m MockModule) MetricsTimerRecord(name string, tags map[string]string, value time.Duration) {
+	panic("implement me")
+}
+
+func (m MockModule) UsersGetFriendStatus(ctx context.Context, userID string, userIDs []string) ([]*api.Friend, error) {
 	panic("implement me")
 }

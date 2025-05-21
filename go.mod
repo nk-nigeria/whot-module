@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgtype v1.8.1
 	github.com/lib/pq v1.10.9
 	github.com/mxschmitt/golang-combinations v1.2.0
-	github.com/nakamaFramework/cgp-common v0.0.0-20230217151900-d1d6d159c49d
+	github.com/nakamaFramework/cgp-common v0.0.0-00010101000000-000000000000
 	github.com/nats-io/nats.go v1.16.0
 	github.com/qmuntal/stateless v1.6.8
 	github.com/stretchr/testify v1.10.0

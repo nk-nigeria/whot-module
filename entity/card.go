@@ -37,21 +37,21 @@ const (
 )
 
 var Ranks = []uint8{
-	Rank1,  // 1
-	Rank2,  // 2
-	Rank3,  // 3
-	Rank4,  // 4
-	Rank5,  // 5
-	Rank6,  // 6
-	Rank7,  // 7
-	Rank8,  // 8
-	Rank9,  // 9
-	Rank10, // 10
-	Rank11, // 11
-	Rank12, // 12
-	Rank13, // 13
-	Rank14, // 14
-	RankWHOT,
+	Rank1,    // 1
+	Rank2,    // 2
+	Rank3,    // 3
+	Rank4,    // 4
+	Rank5,    // 5
+	Rank6,    // 6
+	Rank7,    // 7
+	Rank8,    // 8
+	Rank9,    // 9
+	Rank10,   // 10
+	Rank11,   // 11
+	Rank12,   // 12
+	Rank13,   // 13
+	Rank14,   // 14
+	RankWHOT, //20
 }
 
 var Suits = []uint8{
@@ -60,6 +60,7 @@ var Suits = []uint8{
 	SuitStar,
 	SuitTriangle,
 	SuitSquare,
+	SuitNone,
 }
 
 const (
@@ -147,7 +148,7 @@ const (
 	Card14S = Card(Rank14 | SuitStar)
 	Card14R = Card(Rank14 | SuitSquare)
 
-	CardWHOT = Card(RankWHOT | SuitNone)
+	CardWHOT = Card(RankWHOT)
 )
 
 var mapStringRanks = map[uint8]string{
@@ -203,7 +204,7 @@ func NewCardFromUint(c uint) Card {
 
 func NewCard(rank uint8, suit uint8) Card {
 	if rank == RankWHOT {
-		return Card(rank) // Không cần suit
+		return Card(rank)
 	}
 	return Card(rank | suit)
 }

@@ -3,7 +3,7 @@ package state_machine
 import (
 	"context"
 
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/api/presenter"
 	log "github.com/nakamaFramework/whot-module/pkg/log"
 	"github.com/nakamaFramework/whot-module/pkg/packager"

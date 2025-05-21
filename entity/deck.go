@@ -7,7 +7,7 @@ import (
 	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 )
 
-const MaxCard = 52
+const MaxCard = 54
 
 type Deck struct {
 	Cards *pb.ListCard
@@ -15,38 +15,47 @@ type Deck struct {
 }
 
 func NewDeck() *Deck {
-	ranks := []pb.CardRank{
-		pb.CardRank_RANK_1,
-		pb.CardRank_RANK_2,
-		pb.CardRank_RANK_3,
-		pb.CardRank_RANK_4,
-		pb.CardRank_RANK_5,
-		pb.CardRank_RANK_7,
-		pb.CardRank_RANK_8,
-		pb.CardRank_RANK_10,
-		pb.CardRank_RANK_11,
-		pb.CardRank_RANK_12,
-		pb.CardRank_RANK_13,
-		pb.CardRank_RANK_14,
-		pb.CardRank_RANK_20,
-	}
 
-	suits := []pb.CardSuit{
-		pb.CardSuit_SUIT_CIRCLE,
-		pb.CardSuit_SUIT_CROSS,
-		pb.CardSuit_SUIT_SQUARE,
-		pb.CardSuit_SUIT_STAR,
-		pb.CardSuit_SUIT_TRIANGLE,
+	validCards := map[pb.CardSuit][]pb.CardRank{
+		pb.CardSuit_SUIT_CIRCLE: {
+			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_4, pb.CardRank_RANK_5,
+			pb.CardRank_RANK_7, pb.CardRank_RANK_8,
+			pb.CardRank_RANK_10, pb.CardRank_RANK_11, pb.CardRank_RANK_12, pb.CardRank_RANK_13, pb.CardRank_RANK_14,
+		},
+		pb.CardSuit_SUIT_TRIANGLE: {
+			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_4, pb.CardRank_RANK_5,
+			pb.CardRank_RANK_7, pb.CardRank_RANK_8,
+			pb.CardRank_RANK_10, pb.CardRank_RANK_11, pb.CardRank_RANK_12, pb.CardRank_RANK_13, pb.CardRank_RANK_14,
+		},
+		pb.CardSuit_SUIT_CROSS: {
+			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_5, pb.CardRank_RANK_7,
+			pb.CardRank_RANK_10, pb.CardRank_RANK_11, pb.CardRank_RANK_13, pb.CardRank_RANK_14,
+		},
+		pb.CardSuit_SUIT_SQUARE: {
+			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_5, pb.CardRank_RANK_7,
+			pb.CardRank_RANK_10, pb.CardRank_RANK_11, pb.CardRank_RANK_13, pb.CardRank_RANK_14,
+		},
+		pb.CardSuit_SUIT_STAR: {
+			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_4, pb.CardRank_RANK_5,
+			pb.CardRank_RANK_7, pb.CardRank_RANK_8,
+		},
 	}
 
 	cards := &pb.ListCard{}
-	for _, rank := range ranks {
-		for _, suit := range suits {
+	for suit, ranks := range validCards {
+		for _, rank := range ranks {
 			cards.Cards = append(cards.Cards, &pb.Card{
 				Rank: rank,
 				Suit: suit,
 			})
 		}
+	}
+
+	for i := 0; i < 5; i++ {
+		cards.Cards = append(cards.Cards, &pb.Card{
+			Rank: pb.CardRank_RANK_20,
+			Suit: pb.CardSuit_SUIT_UNSPECIFIED,
+		})
 	}
 
 	return &Deck{

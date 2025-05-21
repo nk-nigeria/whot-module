@@ -35,7 +35,8 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 		DiscardUnknown: false,
 	}
 	message_queue.InitNatsService(logger, constant.NastEndpoint, marshaler)
-	mockcodegame.InitMapMockCodeListCard()
+	mockcodegame.InitMapMockCodeListCard(logger)
+	// cgbdb.RunMigrations(ctx, logger, db)
 	if err := initializer.RegisterMatch(entity.ModuleName, func(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule) (runtime.Match, error) {
 		return api.NewMatchHandler(marshaler, unmarshaler), nil
 	}); err != nil {

@@ -3,7 +3,7 @@ package state_machine
 import (
 	"context"
 
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	log "github.com/nakamaFramework/whot-module/pkg/log"
 	"github.com/nakamaFramework/whot-module/pkg/packager"
 )
@@ -63,7 +63,7 @@ func (s *StatePlay) Process(ctx context.Context, args ...interface{}) error {
 		for _, message := range messages {
 			switch pb.OpCodeRequest(message.GetOpCode()) {
 			case pb.OpCodeRequest_OPCODE_REQUEST_COMBINE_CARDS:
-				processor.CombineCard(logger, dispatcher, state, message)
+				processor.PlayCard(logger, dispatcher, state, message)
 			case pb.OpCodeRequest_OPCODE_REQUEST_SHOW_CARDS:
 				processor.ShowCard(logger, dispatcher, state, message)
 			case pb.OpCodeRequest_OPCODE_REQUEST_DECLARE_CARDS:

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	pb "github.com/nakamaFramework/cgp-common/proto"
+	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/entity"
 )
 

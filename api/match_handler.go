@@ -18,6 +18,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 
 	"github.com/heroiclabs/nakama-common/runtime"
 	pb "github.com/nakamaFramework/cgp-common/proto/whot"
@@ -51,6 +52,7 @@ func (m *MatchHandler) MatchSignal(ctx context.Context, logger runtime.Logger, d
 }
 
 func NewMatchHandler(marshaler *protojson.MarshalOptions, unmarshaler *protojson.UnmarshalOptions) *MatchHandler {
+	fmt.Println("new match handler")
 	return &MatchHandler{
 		processor: processor.NewMatchProcessor(marshaler, unmarshaler, engine.NewWhotPokerEngine()),
 		machine:   gsm.NewGameStateMachine(),

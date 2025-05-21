@@ -3,9 +3,10 @@ package mockcodegame
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/heroiclabs/nakama-common/runtime"
 
 	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/entity"
@@ -13,36 +14,23 @@ import (
 
 var MapMockCodeListCard = make(map[int][]*pb.ListCard)
 
-func InitMapMockCodeListCard() {
-	// path := "./mock_in_game"
-	// files, err := ioutil.ReadDir(path)
-	// if err != nil {
-	// 	return
-	// }
+func InitMapMockCodeListCard(logger runtime.Logger) {
 	listUrlMock := []string{
-		"http://103.226.250.195:9000/chinese-poker-mock/1.json",
-		"http://103.226.250.195:9000/chinese-poker-mock/2.json",
-		"http://103.226.250.195:9000/chinese-poker-mock/3.json",
-		"http://103.226.250.195:9000/chinese-poker-mock/4.json",
+		"https://raw.githubusercontent.com/huy24112001/whot-json/refs/heads/main/1.json",
+		"https://raw.githubusercontent.com/huy24112001/whot-json/refs/heads/main/2.json",
+		"https://raw.githubusercontent.com/huy24112001/whot-json/refs/heads/main/3.json",
 	}
 	for _, urlStr := range listUrlMock {
-		// if f.IsDir() {
-		// 	continue
-		// }
-		// nameFile := f.Name()
-		// if !strings.HasSuffix(nameFile, ".json") {
-		// 	continue
-		// }
-		// fileMock := filepath.Join(path, f.Name())
-		// data, err := os.ReadFile(fileMock) // just pass the file name
 		data, err := downloadFile(urlStr)
 		if err != nil {
-			return
+			logger.Error("Failed to download: %s\n", urlStr)
+			continue
 		}
 		cpMock := &entity.ChinsePokerMock{}
 		err = json.Unmarshal(data, &cpMock)
 		if err != nil {
-			return
+			logger.Error("Failed to parse: %s\n", urlStr)
+			continue
 		}
 		for _, u := range cpMock.Input.Cards {
 			listCard := &pb.ListCard{
@@ -51,7 +39,7 @@ func InitMapMockCodeListCard() {
 			MapMockCodeListCard[cpMock.Id] = append(MapMockCodeListCard[cpMock.Id], listCard)
 		}
 	}
-	fmt.Printf("init map mock code card, len = %d \r\n", len(MapMockCodeListCard))
+	logger.Info("init map mock code card, len = %d\n", len(MapMockCodeListCard))
 }
 
 func downloadFile(url string) ([]byte, error) {

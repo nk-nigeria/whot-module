@@ -1,16 +1,20 @@
 {
-    "name": "Mock 2",
-    "id": 2,
-    "input": {
-        "cards": [
-            {
-                "userId": "1",
-                "card": "8c;qh;4c; 5d;7c;kc;8h;kd; qs;4h;js;7h;jh"
-            },
-            {
-                "userId": "2",
-                "card": "4h;5h;6d; "
-            }
-        ]
-    }
+  "name": "Mock 2",
+  "id": 2,
+  "input": {
+    "cards": [
+      {
+        "userId": "1",
+        "card": "1c;3x;5s;7t;8q;11c;13x;2s;4t;2q;8c;10x;20w"
+      },
+      {
+        "userId": "2",
+        "card": "2c;4x;5s;8t;10q;12c;1x;3s;5t;7q;10c;11x;13w"
+      },
+      {
+        "userId": "3",
+        "card": "3c;5x;7s;8t;11q;13c;2x;4s;6t;8q;10c;14x;20w"
+      }
+    ]
+  }
 }

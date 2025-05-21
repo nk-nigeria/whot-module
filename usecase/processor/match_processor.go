@@ -128,6 +128,32 @@ func (m *processor) ProcessFinishGame(ctx context.Context, logger runtime.Logger
 	logger.Info("process finish game done %v", updateFinish)
 }
 
+func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
+	// logger.Info("User %s request play card", message.GetUserId())
+	// msg := pb.UpdateGameState{
+	// 	State: pb.GameState_GameStatePlay,
+	// 	ArrangeCard: &pb.ArrangeCard{
+	// 		Presence:  message.GetUserId(),
+	// 		CardEvent: pb.CardEvent_PLAY,
+	// 	},
+	// }
+	// m.broadcastMessage(logger, dispatcher, int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE), &msg, nil, nil, true)
+	// m.engine.Play(s, message.GetUserId(), message.GetData())
+}
+
+func (m *processor) ChooseWhotShape(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
+	// if !s.WaitingForWhotShapeChoice {
+	// 	return errors.New("not waiting for whot shape")
+	// }
+	// s.WhotChosenShape = shape
+	// s.WaitingForWhotShapeChoice = false
+	// return nil
+}
+
+func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
+
+}
+
 func (m *processor) CombineCard(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
 	logger.Info("User %s request combineCard", message.GetUserId())
 	msg := pb.UpdateGameState{

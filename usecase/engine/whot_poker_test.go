@@ -24,12 +24,21 @@ func TestGame(t *testing.T) {
 		PlayingPresences: linkedhashmap.New(),
 		Cards:            make(map[string]*pb.ListCard),
 		OrganizeCards:    make(map[string]*pb.ListCard),
+		Label: &entity.MatchLabel{
+			Open:         1,
+			Bet:          100,
+			Code:         "test",
+			Name:         "name",
+			Password:     "password",
+			MaxSize:      4,
+			MockCodeCard: 1,
+		},
 	}
 
-	//var err = processor.NewGame(state)
-	//if err != nil {
-	//	t.Errorf("new game error %v", err)
-	//}
+	// var err = processor.NewGame(state)
+	// if err != nil {
+	// 	t.Errorf("new game error %v", err)
+	// }
 
 	t.Logf("new game success")
 	processor.Deal(state)
@@ -93,7 +102,7 @@ func TestGame(t *testing.T) {
 			},
 			{
 				Rank: pb.CardRank_RANK_3,
-				Suit: pb.CardSuit_SUIT_WHOT,
+				Suit: pb.CardSuit_SUIT_TRIANGLE,
 			},
 		},
 	}
@@ -148,7 +157,7 @@ func TestGame(t *testing.T) {
 			},
 			{
 				Rank: pb.CardRank_RANK_20,
-				Suit: pb.CardSuit_SUIT_WHOT,
+				Suit: pb.CardSuit_SUIT_UNSPECIFIED,
 			},
 			{
 				Rank: pb.CardRank_RANK_4,
@@ -232,7 +241,7 @@ func TestGameNormalWithNorma(t *testing.T) {
 			},
 			{
 				Rank: pb.CardRank_RANK_20,
-				Suit: pb.CardSuit_SUIT_WHOT,
+				Suit: pb.CardSuit_SUIT_UNSPECIFIED,
 			},
 			{
 				Rank: pb.CardRank_RANK_4,

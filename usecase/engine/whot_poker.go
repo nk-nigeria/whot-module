@@ -27,6 +27,7 @@ func (c *Engine) NewGame(s *entity.MatchState) error {
 func (c *Engine) Deal(s *entity.MatchState) error {
 	c.deck = entity.NewDeck()
 	c.deck.Shuffle()
+	mockcodegame.InitMapMockCodeListCard(log.GetLogger())
 	if list, exist := mockcodegame.MapMockCodeListCard[int(s.Label.MockCodeCard)]; exist {
 		if len(list) >= s.PlayingPresences.Size() {
 			log.GetLogger().Debug("[MockCard] Match has label mock code card %d " +
@@ -55,6 +56,42 @@ func (c *Engine) Deal(s *entity.MatchState) error {
 		}
 	}
 
+	return nil
+}
+
+func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) error {
+	// if s.CurrentTurn != userId {
+	// 	return errors.New("not user's turn")
+	// }
+
+	// playerCards, ok := s.Cards[userId]
+	// if !ok {
+	// 	return errors.New("player cards not found")
+	// }
+
+	// // Kiểm tra hợp lệ
+	// if !hand.IsPlayableCard(card, s.TopCard) {
+	// 	return errors.New("invalid card played")
+	// }
+
+	// // Bỏ lá bài khỏi tay
+	// hand.RemoveCard(playerCards, card)
+
+	// // Cập nhật bài trên bàn
+	// s.TopCard = card
+
+	// // Cập nhật lượt tiếp theo
+	// s.AdvanceTurn()
+
+	return nil
+}
+
+func (e *Engine) ChooseWhotShape(s *entity.MatchState, playerId string, shape string) error {
+	// if !s.WaitingForWhotShapeChoice {
+	// 	return errors.New("not waiting for whot shape")
+	// }
+	// s.WhotChosenShape = shape
+	// s.WaitingForWhotShapeChoice = false
 	return nil
 }
 
