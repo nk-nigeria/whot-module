@@ -1,12 +1,13 @@
 package engine
 
 import (
-	combinations "github.com/mxschmitt/golang-combinations"
+	"errors"
+	"math"
+
 	pb "github.com/nakamaFramework/cgp-common/proto/whot"
 	"github.com/nakamaFramework/whot-module/entity"
 	mockcodegame "github.com/nakamaFramework/whot-module/mock_code_game"
 	"github.com/nakamaFramework/whot-module/pkg/log"
-	"github.com/nakamaFramework/whot-module/usecase/hand"
 )
 
 type Engine struct {
@@ -17,16 +18,21 @@ func NewWhotPokerEngine() UseCase {
 	return &Engine{}
 }
 
-func (c *Engine) NewGame(s *entity.MatchState) error {
+func (e *Engine) NewGame(s *entity.MatchState) error {
 	s.Cards = make(map[string]*pb.ListCard)
-	s.OrganizeCards = make(map[string]*pb.ListCard)
-
+	if s.WinnerId != "" {
+		log.GetLogger().Info("Resetting match state for new game")
+		s.PreviousWinnerId = s.WinnerId
+		s.WinnerId = ""
+	}
+	s.SetDealer()
+	s.CurrentTurn = s.DealerId
 	return nil
 }
 
-func (c *Engine) Deal(s *entity.MatchState) error {
-	c.deck = entity.NewDeck()
-	c.deck.Shuffle()
+func (e *Engine) Deal(s *entity.MatchState) error {
+	e.deck = entity.NewDeck()
+	e.deck.Shuffle()
 	mockcodegame.InitMapMockCodeListCard(log.GetLogger())
 	if list, exist := mockcodegame.MapMockCodeListCard[int(s.Label.MockCodeCard)]; exist {
 		if len(list) >= s.PlayingPresences.Size() {
@@ -45,152 +51,302 @@ func (c *Engine) Deal(s *entity.MatchState) error {
 		}
 	}
 
+	CountCard := 0
+	switch s.PlayingPresences.Size() {
+	case 2:
+		CountCard = entity.MaxPresenceCard
+	case 3:
+		CountCard = entity.MaxPresenceCard - 1
+	case 4:
+		CountCard = entity.MaxPresenceCard - 2
+	default:
+		log.GetLogger().Error("Invalid number of players: %d", s.PlayingPresences.Size())
+		return nil
+	}
+
 	// loop on userid in match
 	for _, k := range s.PlayingPresences.Keys() {
 		userId := k.(string)
-		cards, err := c.deck.Deal(entity.MaxPresenceCard)
+		cards, err := e.deck.Deal(CountCard)
 		if err == nil {
 			s.Cards[userId] = cards
 		} else {
 			return err
 		}
 	}
+	card, err := e.deck.Deal(1)
+	if err != nil {
+		return err
+	}
+	if len(card.Cards) > 0 {
+		s.TopCard = card.Cards[0]
+	} else {
+		return errors.New("no cards dealt for top card")
+	}
+
+	s.BuildPlayOrderFromDealer()
 
 	return nil
 }
 
-func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) error {
-	// if s.CurrentTurn != userId {
-	// 	return errors.New("not user's turn")
-	// }
+func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (entity.CardEffect, error) {
 
-	// playerCards, ok := s.Cards[userId]
-	// if !ok {
-	// 	return errors.New("player cards not found")
-	// }
+	if s.CurrentTurn != userId {
+		log.GetLogger().Error("not user's turn")
+		return entity.EffectNone, errors.New("not user's turn")
+	}
 
-	// // Kiểm tra hợp lệ
-	// if !hand.IsPlayableCard(card, s.TopCard) {
-	// 	return errors.New("invalid card played")
-	// }
+	playerCards, ok := s.Cards[userId]
+	if !ok {
+		log.GetLogger().Error("player cards not found")
+		return entity.EffectNone, errors.New("player cards not found")
+	}
 
-	// // Bỏ lá bài khỏi tay
-	// hand.RemoveCard(playerCards, card)
+	found := false
+	cardIndex := -1
+	for i, c := range playerCards.Cards {
+		if c.GetRank() == card.GetRank() && c.GetSuit() == card.GetSuit() {
+			found = true
+			cardIndex = i
+			break
+		}
+	}
+	if !found {
+		log.GetLogger().Error("card not in player's hand")
+		return entity.EffectNone, errors.New("card not in player's hand")
+	}
 
-	// // Cập nhật bài trên bàn
-	// s.TopCard = card
+	playedEntityCard := entity.NewCardFromPb(card.GetRank(), card.GetSuit())
+	topEntityCard := entity.NewCardFromPb(s.TopCard.GetRank(), s.TopCard.GetSuit())
 
-	// // Cập nhật lượt tiếp theo
-	// s.AdvanceTurn()
+	if !e.IsValidPlay(playedEntityCard, topEntityCard) {
+		log.GetLogger().Error("invalid card played: %v on top %v", card, s.TopCard)
+		return entity.EffectNone, errors.New("invalid card played")
+	}
+
+	effect := entity.EffectNone
+
+	switch card.GetRank() {
+	case entity.CardValueHoldOn: // 1
+		effect = entity.EffectHoldOn
+		s.IsHoldOn = true
+
+	case entity.CardValuePickTwo: // 2
+		effect = entity.EffectPickTwo
+		s.PickPenalty += 2
+		s.EffectTarget = s.GetNextPlayerClockwise(userId)
+		s.CurrentTurn = s.EffectTarget
+
+	case entity.CardValuePickThree: // 5
+		effect = entity.EffectPickThree
+		s.PickPenalty += 3
+		s.EffectTarget = s.GetNextPlayerClockwise(userId)
+		s.CurrentTurn = s.EffectTarget
+
+	case entity.CardValueSuspension: // 8
+		effect = entity.EffectSuspension
+		s.IsSuspension = true
+		nextPlayer := s.GetNextPlayerClockwise(userId)
+		s.CurrentTurn = s.GetNextPlayerClockwise(nextPlayer)
+
+	case entity.CardValueGeneralMarket: // 14
+		effect = entity.EffectGeneralMarket
+
+	case entity.CardValueWhot: // 20
+		effect = entity.EffectWhot
+		s.WaitingForWhotShape = true
+	}
+	// Cập nhật bài trên bàn
+	s.TopCard = card
+	s.CurrentEffect = effect
+
+	// Xóa lá bài đã đánh khỏi bài của người chơi
+	playerCards.Cards = append(playerCards.Cards[:cardIndex], playerCards.Cards[cardIndex+1:]...)
+	s.Cards[userId] = playerCards
+
+	// Kiểm tra người chơi đã hết bài chưa
+	if len(playerCards.Cards) == 0 {
+		s.WinnerId = userId
+	}
+
+	return effect, nil
+}
+
+func (e *Engine) DrawCardsFromDeck(s *entity.MatchState, userID string) (int, error) {
+	// Kiểm tra lượt chơi
+	if s.CurrentTurn != userID {
+		return 0, errors.New("not user's turn")
+	}
+
+	// Xác định số lá cần rút
+	cardsToDraw := 1
+	drawingPenalty := false
+
+	if s.PickPenalty > 0 && s.EffectTarget == userID {
+		cardsToDraw = s.PickPenalty
+		s.PickPenalty = 0
+		s.EffectTarget = ""
+		drawingPenalty = true
+	}
+
+	// Rút bài từ bộ bài
+	card, err := e.deck.Deal(cardsToDraw)
+	if err != nil {
+		return 0, err
+	}
+
+	s.Cards[userID].Cards = append(s.Cards[userID].Cards, card.Cards...)
+
+	// Xác định người chơi tiếp theo
+	if !drawingPenalty {
+		s.CurrentTurn = s.GetNextPlayerClockwise(userID)
+	}
+
+	return cardsToDraw, nil
+}
+
+func (e *Engine) HandleGeneralMarket(s *entity.MatchState, userID string) error {
+	for _, key := range s.PlayingPresences.Keys() {
+		otherUserId := key.(string)
+		if otherUserId != userID {
+			cardsToDraw, err := e.DrawCardsFromDeck(s, otherUserId)
+			if cardsToDraw == 1 {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+
+		}
+
+	}
+	return nil
+}
+
+func (e *Engine) ChooseWhotShape(s *entity.MatchState, userID string, shape pb.CardSuit) error {
+	// Kiểm tra xem có đang chờ chọn hình không
+	if !s.WaitingForWhotShape {
+		return errors.New("not waiting for Whot shape choice")
+	}
+
+	// Kiểm tra lượt chơi
+	if s.CurrentTurn != userID {
+		return errors.New("not user's turn")
+	}
+
+	// Cập nhật hình được chọn
+	s.TopCard.Suit = shape
+	s.WaitingForWhotShape = false
 
 	return nil
 }
 
-func (e *Engine) ChooseWhotShape(s *entity.MatchState, playerId string, shape string) error {
-	// if !s.WaitingForWhotShapeChoice {
-	// 	return errors.New("not waiting for whot shape")
-	// }
-	// s.WhotChosenShape = shape
-	// s.WaitingForWhotShapeChoice = false
-	return nil
-}
-
-func (c *Engine) Organize(s *entity.MatchState, presence string, cards *pb.ListCard) error {
-	s.UpdateShowCard(presence, cards)
-	return nil
-}
-
-func (c *Engine) Combine(s *entity.MatchState, presence string) error {
-	s.RemoveShowCard(presence)
-	return nil
-}
-
-func (c *Engine) Finish(s *entity.MatchState) *pb.UpdateFinish {
-	// Check every user
+func (e *Engine) Finish(s *entity.MatchState) *pb.UpdateFinish {
 	updateFinish := pb.UpdateFinish{}
-	presenceCount := s.PlayingPresences.Size()
-	ctx := hand.NewCompareContext(presenceCount)
 
-	log.GetLogger().Info("Finish presence %v, size %v", s.PlayingPresences, presenceCount)
+	// Nếu có người thắng trực tiếp (đánh hết bài)
+	if s.WinnerId != "" {
+		// Người thắng nhận toàn bộ tiền
+		winResult := &pb.WhotPlayerResult{
+			UserId: s.WinnerId,
+			Score: &pb.WhotScoreResult{
+				WinFactor: 1, // Người thắng nhận toàn bộ tiền
+			},
+		}
+		updateFinish.Results = append(updateFinish.Results, winResult)
 
-	// prepare for compare data
-	userIds := make([]string, 0, presenceCount)
-	hands := make(map[string]*hand.Hand)
-	results := make(map[string]*pb.ComparisonResult)
-	userJackpot := ""
+		// Những người khác thua
+		for _, val := range s.PlayingPresences.Keys() {
+			uid := val.(string)
+			if uid != s.WinnerId {
+				loseResult := &pb.WhotPlayerResult{
+					UserId: uid,
+					Score: &pb.WhotScoreResult{
+						WinFactor: 0, // Người thua không nhận gì
+					},
+				}
+				updateFinish.Results = append(updateFinish.Results, loseResult)
+			}
+		}
+		return &updateFinish
+	}
+
+	// Nếu bộ bài hết mà chưa có ai hết bài, tính điểm
+	// Tính điểm cho mỗi người chơi
+	scores := make(map[string]int)
+	lowestScore := math.MaxInt32
+
 	for _, val := range s.PlayingPresences.Keys() {
 		uid := val.(string)
-		userIds = append(userIds, uid)
+		playerCards := s.Cards[uid]
 
-		cards := s.OrganizeCards[uid]
-		var h *hand.Hand
-		var err error
-		h, err = hand.NewHandFromPb(cards)
-		h.SetOwner(uid)
-		if err != nil {
-			continue
+		// Tính tổng điểm
+		totalScore := 0
+		for _, card := range playerCards.Cards {
+			cardValue := entity.CalculateCardValue(card)
+			totalScore += cardValue
 		}
 
-		hands[uid] = h
-
-		result := &pb.ComparisonResult{
-			UserId:      uid,
-			PointResult: h.GetPointResult(),
-			ScoreResult: &pb.ScoreResult{},
+		scores[uid] = totalScore
+		if totalScore < lowestScore {
+			lowestScore = totalScore
 		}
 
-		results[uid] = result
-		if h.IsJackpot() {
-			userJackpot = uid
+		// Lưu điểm vào kết quả
+		result := &pb.WhotPlayerResult{
+			UserId: uid,
+			Score: &pb.WhotScoreResult{
+				TotalPoints: int64(totalScore),
+			},
 		}
-
 		updateFinish.Results = append(updateFinish.Results, result)
-
-		log.GetLogger().Info("prepare for %s, hand %v, result %v", uid, h, result)
 	}
 
-	pairs := combinations.Combinations(userIds, 2)
-	mapRcPair := make(map[string]*hand.ComparisonResult, 0)
-	log.GetLogger().Info("combination %v of %v", pairs, len(userIds))
-	for _, pair := range pairs {
-		uid1 := pair[0]
-		uid2 := pair[1]
-		log.GetLogger().Info("compare %v with %v", pair[0], pair[1])
-
-		// calculate natural point, normal point, hand bonus case
-		rc := hand.CompareHand(ctx, hands[uid1], hands[uid2])
-		mapRcPair[uid1+uid2] = rc
-		hand.ProcessCompareResult(ctx, results[uid1], rc.GetR1())
-		hand.ProcessCompareResult(ctx, results[uid2], rc.GetR2())
-		for _, bonus := range rc.GetBonuses() {
-			if bonus.Type != pb.HandBonusType_Scoop {
-				updateFinish.Bonuses = append(updateFinish.Bonuses, bonus)
-			}
-
+	// Tìm những người có điểm thấp nhất
+	winners := []string{}
+	for uid, score := range scores {
+		if score == lowestScore {
+			winners = append(winners, uid)
 		}
-
 	}
 
-	// hand.ProcessCompareBonusResult(ctx, updateFinish.Results, &updateFinish.Bonuses)
-	hand.ProcessCompareBonusResult(ctx,
-		updateFinish.Results, mapRcPair, &updateFinish.Bonuses)
+	// Phân bổ tiền thắng
+	winFactor := 1.0 / float64(len(winners))
 
-	for _, rc := range mapRcPair {
-		for _, bonus := range rc.GetBonuses() {
-			if bonus.Type == pb.HandBonusType_Scoop {
-				updateFinish.Bonuses = append(updateFinish.Bonuses, bonus)
+	// Đặt kết quả cuối cùng
+	for i, result := range updateFinish.Results {
+		isWinner := false
+		for _, winnerID := range winners {
+			if result.UserId == winnerID {
+				isWinner = true
+				break
 			}
 		}
 
-	}
-	hand.CalcTotalFactor(updateFinish.Results)
-	if userJackpot != "" {
-		updateFinish.Jackpot = &pb.Jackpot{
-			UserId:   userJackpot,
-			GameCode: entity.ModuleName,
+		if isWinner {
+			updateFinish.Results[i].Score.WinFactor = float64(winFactor)
+			updateFinish.Results[i].Score.IsWinner = true
+		} else {
+			updateFinish.Results[i].Score.WinFactor = 0
+			updateFinish.Results[i].Score.IsWinner = false
 		}
-	} else {
-		updateFinish.Jackpot = &pb.Jackpot{}
 	}
+
 	return &updateFinish
+}
+
+func (e *Engine) IsValidPlay(playedCard, topCard entity.Card) bool {
+
+	if playedCard.GetSuit() == entity.SuitNone && playedCard.GetRank() == entity.RankWHOT {
+		return true
+	}
+
+	if playedCard.GetSuit() == topCard.GetSuit() {
+		return true
+	}
+
+	if playedCard.GetRank() == topCard.GetRank() {
+		return true
+	}
+	return false
 }

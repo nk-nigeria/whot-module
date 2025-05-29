@@ -108,7 +108,7 @@ func (m *MatchHandler) MatchInit(ctx context.Context, logger runtime.Logger, db 
 
 	logger.Info("match init label= %s", string(labelJSON))
 
-	matchState := entity.NewMathState(label)
+	matchState := entity.NewMatchState(label)
 	// init jp treasure
 	jpTreasure, _ := cgbdb.GetJackpot(ctx, logger, db, entity.ModuleName)
 	if jpTreasure != nil {

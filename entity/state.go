@@ -38,11 +38,24 @@ type MatchState struct {
 	JoinsInProgress     int
 	PresencesNoInteract map[string]int
 
+	CurrentTurn      string   // userId của người đang đánh
+	DealerId         string   // id người chia bài, người này sẽ đánh đầu tiên
+	PlayOrder        []string // Danh sách người chơi theo thứ tự đánh bài, bắt đầu từ người chia bài
+	PreviousWinnerId string   // id người thắng ván trước, nếu có
+	WinnerId         string   // id người thắng ván này, nếu có
+
+	PickPenalty         int        // Số lá phải rút khi bị phạt
+	CurrentEffect       CardEffect // Hiệu ứng đang áp dụng
+	EffectTarget        string     // ID người chơi bị ảnh hưởng
+	IsHoldOn            bool       // Trạng thái Hold On
+	IsSuspension        bool       // Trạng thái Suspension
+	WaitingForWhotShape bool       // Đang chờ người chơi chọn hình sau Whot
+	// CurrentShape       WhotCardShape    // Hình dạng hiện tại (sau khi chọn Whot)
+
+	// The top card on the table.
+	TopCard *pb.Card
 	// Mark assignments to player user IDs.
 	Cards map[string]*pb.ListCard
-	// Mark assignments to player user IDs.
-	OrganizeCards map[string]*pb.ListCard
-	// Whose turn it currently is.
 
 	CountDownReachTime time.Time
 	LastCountDown      int
@@ -53,7 +66,7 @@ type MatchState struct {
 	jackpotTreasure *pb.Jackpot
 }
 
-func NewMathState(label *MatchLabel) MatchState {
+func NewMatchState(label *MatchLabel) MatchState {
 	m := MatchState{
 		Random:              rand.New(rand.NewSource(time.Now().UnixNano())),
 		Label:               label,
@@ -65,6 +78,52 @@ func NewMathState(label *MatchLabel) MatchState {
 		// balanceResult:       nil,
 	}
 	return m
+}
+
+func (s *MatchState) SetDealer() {
+	// Nếu đã có người thắng ván trước, set làm dealer
+	if s.PreviousWinnerId != "" {
+		s.DealerId = s.PreviousWinnerId
+		return
+	}
+
+	// Nếu là bàn mới (chưa có người thắng), chọn người đầu tiên vào bàn làm dealer
+	if s.PlayingPresences.Size() > 0 {
+		for _, key := range s.PlayingPresences.Keys() {
+			s.DealerId = key.(string)
+			return
+		}
+	}
+}
+
+func (s *MatchState) BuildPlayOrderFromDealer() {
+	// Xây dựng danh sách người chơi theo thứ tự đánh bài, bắt đầu từ dealer
+	keys := s.PlayingPresences.Keys()
+	values := make([]string, 0, len(keys))
+	startIndex := 0
+
+	for i, key := range keys {
+		val, _ := s.PlayingPresences.Get(key)
+		presence := val.(runtime.Presence)
+		userID := presence.GetUserId()
+		values = append(values, userID)
+
+		if userID == s.DealerId {
+			startIndex = i
+		}
+	}
+
+	rotated := append(values[startIndex:], values[:startIndex]...)
+	s.PlayOrder = rotated
+}
+
+func (s *MatchState) GetNextPlayerClockwise(current string) string {
+	for i, userID := range s.PlayOrder {
+		if userID == current {
+			return s.PlayOrder[(i+1)%len(s.PlayOrder)]
+		}
+	}
+	return current
 }
 
 func (s *MatchState) GetBalanceResult() *pb.BalanceResult {
@@ -188,21 +247,8 @@ func (s *MatchState) IsReadyToPlay() bool {
 	return s.Presences.Size() >= s.MinPresences
 }
 
-func (s *MatchState) UpdateShowCard(userId string, cards *pb.ListCard) {
-	s.OrganizeCards[userId] = cards
-}
-
-func (s *MatchState) RemoveShowCard(userId string) {
-	delete(s.OrganizeCards, userId)
-	// s.PresencesNoAction[userId] = 0
-}
-
 func (s *MatchState) GetPlayingCount() int {
 	return s.PlayingPresences.Size()
-}
-
-func (s *MatchState) GetShowCardCount() int {
-	return len(s.OrganizeCards)
 }
 
 func (s *MatchState) GetPresences() []runtime.Presence {

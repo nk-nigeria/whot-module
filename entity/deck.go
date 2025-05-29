@@ -93,6 +93,22 @@ func (d *Deck) Deal(n int) (*pb.ListCard, error) {
 	return &cards, nil
 }
 
+// Deal one card from the deck
+func (d *Deck) DealOne() (*pb.Card, error) {
+	if d.Dealt >= len(d.Cards.Cards) {
+		return nil, errors.New("deck.deal.error-not-enough")
+	}
+
+	card := d.Cards.Cards[d.Dealt]
+	d.Dealt++
+
+	return card, nil
+}
+
+func (d *Deck) RemainingCards() int {
+	return MaxCard - d.Dealt
+}
+
 // Shuffle any hand
 func Shuffle(cards *pb.ListCard) *pb.ListCard {
 	for i := 1; i < len(cards.Cards); i++ {

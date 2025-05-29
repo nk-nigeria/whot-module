@@ -53,6 +53,7 @@ func (s *StatePlay) Exit(_ context.Context, _ ...interface{}) error {
 func (s *StatePlay) Process(ctx context.Context, args ...interface{}) error {
 	// log.GetLogger().Info("[play] processing")
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
+
 	state := procPkg.GetState()
 	if remain := state.GetRemainCountDown(); remain > 0 {
 		// log.GetLogger().Info("[play] not timeout %v, message %v", remain, procPkg.GetMessages())
@@ -62,13 +63,12 @@ func (s *StatePlay) Process(ctx context.Context, args ...interface{}) error {
 		dispatcher := procPkg.GetDispatcher()
 		for _, message := range messages {
 			switch pb.OpCodeRequest(message.GetOpCode()) {
-			case pb.OpCodeRequest_OPCODE_REQUEST_COMBINE_CARDS:
+			case pb.OpCodeRequest_OPCODE_REQUEST_PLAY_CARD:
 				processor.PlayCard(logger, dispatcher, state, message)
-			case pb.OpCodeRequest_OPCODE_REQUEST_SHOW_CARDS:
-				processor.ShowCard(logger, dispatcher, state, message)
-			case pb.OpCodeRequest_OPCODE_REQUEST_DECLARE_CARDS:
-				processor.DeclareCard(logger, dispatcher, state, message)
-				state.ResetUserNotInteract(message.GetUserId())
+			case pb.OpCodeRequest_OPCODE_REQUEST_DRAW_CARD:
+				processor.DrawCard(logger, dispatcher, state, message)
+			case pb.OpCodeRequest_OPCODE_REQUEST_CALL_WHOT:
+				processor.ChooseWhotShape(logger, dispatcher, state, message)
 			case pb.OpCodeRequest_OPCODE_USER_INTERACT_CARDS:
 				logger.Info("User %s interact with card", message.GetUserId())
 				state.ResetUserNotInteract(message.GetUserId())
@@ -76,9 +76,8 @@ func (s *StatePlay) Process(ctx context.Context, args ...interface{}) error {
 		}
 
 		// log.GetLogger().Info("[play] not timeout show %v, play %v", state.GetShowCardCount(), state.GetPlayingCount())
-		// Check all user show card
-		if state.GetShowCardCount() >= state.GetPlayingCount() {
-			s.Trigger(ctx, triggerPlayCombineAll)
+		if state.GameState == pb.GameState_GameStateReward {
+			s.Trigger(ctx, triggerPlayTimeout)
 		}
 	} else {
 		log.GetLogger().Info("[play] timeout reach %v", remain)

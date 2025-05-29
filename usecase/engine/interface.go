@@ -8,9 +8,9 @@ import (
 type UseCase interface {
 	NewGame(s *entity.MatchState) error
 	Deal(s *entity.MatchState) error
-	PlayCard(s *entity.MatchState, presence string, card *pb.Card) error
-	ChooseWhotShape(s *entity.MatchState, presence string, shape string) error
-	Organize(s *entity.MatchState, presence string, cards *pb.ListCard) error
-	Combine(s *entity.MatchState, presence string) error
+	PlayCard(s *entity.MatchState, presence string, card *pb.Card) (entity.CardEffect, error)
+	DrawCardsFromDeck(s *entity.MatchState, userID string) (int, error)
+	ChooseWhotShape(s *entity.MatchState, userID string, shape pb.CardSuit) error
+	HandleGeneralMarket(s *entity.MatchState, userID string) error
 	Finish(s *entity.MatchState) *pb.UpdateFinish
 }

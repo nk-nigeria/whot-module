@@ -191,6 +191,28 @@ var mapSuits = map[pb.CardSuit]uint8{
 	pb.CardSuit_SUIT_TRIANGLE: SuitTriangle,
 }
 
+type CardEffect int
+
+const (
+	EffectNone          CardEffect = iota
+	EffectHoldOn                   // Số 1 - Hold On
+	EffectPickTwo                  // Số 2 - Pick Two
+	EffectPickThree                // Số 5 - Pick Three
+	EffectSuspension               // Số 8 - Suspension
+	EffectGeneralMarket            // Số 14 - General Market
+	EffectWhot                     // Số 20 - Whot
+)
+
+// Giá trị của các lá đặc biệt
+const (
+	CardValueHoldOn        = 1
+	CardValuePickTwo       = 2
+	CardValuePickThree     = 5
+	CardValueSuspension    = 8
+	CardValueGeneralMarket = 14
+	CardValueWhot          = 20
+)
+
 func NewCardFromPb(rank pb.CardRank, suit pb.CardSuit) Card {
 	card := uint8(0)
 	card |= mapRanks[rank]
@@ -218,6 +240,17 @@ func (c Card) GetSuit() uint8 {
 		return SuitNone
 	}
 	return uint8(c & 0x0F)
+}
+
+func CalculateCardValue(card *pb.Card) int {
+	value := int(card.GetRank())
+
+	// Lá Star có giá trị gấp đôi
+	if card.GetSuit() == pb.CardSuit(SuitStar) {
+		value *= 2
+	}
+
+	return value
 }
 
 func (c Card) String() string {

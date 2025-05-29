@@ -10,13 +10,13 @@ import (
 )
 
 const (
-	stateInit      = "Init" // Only for initialize
-	stateIdle      = "Idle"
-	stateMatching  = "Matching"
-	statePreparing = "Preparing"
-	statePlay      = "Play"
-	stateReward    = "Reward"
-	stateFinish    = "Finish"
+	stateInit      = "Init"      // Khởi tạo
+	stateIdle      = "Idle"      // Chờ người chơi đầu tiên vào bàn
+	stateMatching  = "Matching"  // Chờ đủ người chơi vào bàn
+	statePreparing = "Preparing" // Đếm ngược và chuẩn bị bắt đầu ván chơi
+	statePlay      = "Play"      // Chơi bài, chờ người chơi đánh bài
+	stateReward    = "Reward"    // Tính điểm và trả thưởng cho người chơi
+	stateFinish    = "Finish"    // Kết thúc ván chơi, trả về trạng thái ban đầu
 )
 
 const (
@@ -26,7 +26,6 @@ const (
 	triggerPreparingDone   = "GamePreparingDone"
 	triggerPreparingFailed = "GamePreparingFailed"
 	triggerPlayTimeout     = "GamePlayTimeout"
-	triggerPlayCombineAll  = "GamePlayCombineAll"
 	triggerRewardTimeout   = "GameRewardTimeout"
 	triggerNoOne           = "GameNoOne"
 
@@ -38,7 +37,7 @@ const (
 	preparingTimeout = time.Second * 10
 	playTimeout      = time.Second * 60 * 2
 	//playTimeout      = time.Second * 10
-	rewardTimeout = time.Second * 30
+	rewardTimeout = time.Second * 15
 	//rewardTimeout    = time.Second * 10
 )
 
@@ -119,8 +118,7 @@ func (m *Machine) configure() {
 		OnEntry(play.Enter).
 		OnExit(play.Exit).
 		InternalTransition(triggerProcess, play.Process).
-		Permit(triggerPlayTimeout, stateReward).
-		Permit(triggerPlayCombineAll, stateReward)
+		Permit(triggerPlayTimeout, stateReward)
 
 	// reward state: wait for reward timeout => switch to
 	reward := NewStateReward(fireCtx)
