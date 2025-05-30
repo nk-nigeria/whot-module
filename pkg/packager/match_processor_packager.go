@@ -5,8 +5,8 @@ import (
 	"database/sql"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	"github.com/nakamaFramework/whot-module/entity"
-	processor_interface "github.com/nakamaFramework/whot-module/usecase/processor"
+	"github.com/nakama-nigeria/whot-module/entity"
+	processor_interface "github.com/nakama-nigeria/whot-module/usecase/processor"
 )
 
 const processorKey = "pd"

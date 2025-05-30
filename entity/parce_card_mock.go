@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
 )
 
 func ParseCard(str string) *pb.Card {

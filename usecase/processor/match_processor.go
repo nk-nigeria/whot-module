@@ -7,13 +7,13 @@ import (
 	"strings"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	pb1 "github.com/nakamaFramework/cgp-common/proto"
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
-	"github.com/nakamaFramework/whot-module/cgbdb"
-	"github.com/nakamaFramework/whot-module/constant"
-	"github.com/nakamaFramework/whot-module/entity"
-	"github.com/nakamaFramework/whot-module/message_queue"
-	"github.com/nakamaFramework/whot-module/usecase/engine"
+	pb1 "github.com/nakama-nigeria/cgp-common/proto"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	"github.com/nakama-nigeria/whot-module/cgbdb"
+	"github.com/nakama-nigeria/whot-module/constant"
+	"github.com/nakama-nigeria/whot-module/entity"
+	"github.com/nakama-nigeria/whot-module/message_queue"
+	"github.com/nakama-nigeria/whot-module/usecase/engine"
 	"google.golang.org/protobuf/proto"
 )
 

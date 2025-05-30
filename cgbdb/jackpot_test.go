@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
-	"github.com/nakamaFramework/whot-module/entity"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	"github.com/nakama-nigeria/whot-module/entity"
 )
 
 func TestAddOrUpdateChipJackpot(t *testing.T) {

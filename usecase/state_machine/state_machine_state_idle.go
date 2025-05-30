@@ -3,10 +3,10 @@ package state_machine
 import (
 	"context"
 
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
-	"github.com/nakamaFramework/whot-module/api/presenter"
-	log "github.com/nakamaFramework/whot-module/pkg/log"
-	"github.com/nakamaFramework/whot-module/pkg/packager"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	"github.com/nakama-nigeria/whot-module/api/presenter"
+	log "github.com/nakama-nigeria/whot-module/pkg/log"
+	"github.com/nakama-nigeria/whot-module/pkg/packager"
 )
 
 type StateIdle struct {

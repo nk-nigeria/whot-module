@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math/rand"
 
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
 )
 
 const MaxCard = 54

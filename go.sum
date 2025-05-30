@@ -104,6 +104,8 @@ github.com/mattn/go-isatty v0.0.7/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hd
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/minio/highwayhash v1.0.1 h1:dZ6IIu8Z14VlC0VpfKofAhCy74wu/Qb5gcn52yWoz/0=
 github.com/minio/highwayhash v1.0.1/go.mod h1:BQskDq+xkJ12lmlUUi7U0M5Swg3EWR+dLTk+kldvVxY=
+github.com/nakama-nigeria/cgp-common v0.0.0-20250530040945-51a679c17fa2 h1:2RS1C9zMkpYjCY2mdjTFP52QyiivuoqBkNNaShVHA5Y=
+github.com/nakama-nigeria/cgp-common v0.0.0-20250530040945-51a679c17fa2/go.mod h1:LE2NWYtt0sjyAP5bqvQ62iF6UNTUvtAOsf3A9iqXiU8=
 github.com/nats-io/jwt/v2 v2.2.0 h1:Yg/4WFK6vsqMudRg91eBb7Dh6XeVcDMPHycDE8CfltE=
 github.com/nats-io/jwt/v2 v2.2.0/go.mod h1:0tqz9Hlu6bCBFLWAASKhE5vUA4c24L9KPUUgvwumE/k=
 github.com/nats-io/nats-server/v2 v2.6.6 h1:t6LcqHuMXhylQ/j8078zDUSc7sE0FBMcN8jwObAriTc=

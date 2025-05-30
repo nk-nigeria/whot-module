@@ -8,8 +8,8 @@ import (
 
 	"github.com/heroiclabs/nakama-common/runtime"
 	_ "github.com/lib/pq"
-	"github.com/nakamaFramework/whot-module/mock"
-	"github.com/nakamaFramework/whot-module/pkg/log"
+	"github.com/nakama-nigeria/whot-module/mock"
+	"github.com/nakama-nigeria/whot-module/pkg/log"
 	"google.golang.org/protobuf/proto"
 )
 

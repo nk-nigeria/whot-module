@@ -7,8 +7,8 @@ import (
 
 	"github.com/heroiclabs/nakama-common/runtime"
 	"github.com/jackc/pgtype"
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
-	"github.com/nakamaFramework/whot-module/entity"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	"github.com/nakama-nigeria/whot-module/entity"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

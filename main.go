@@ -5,15 +5,15 @@ import (
 	"database/sql"
 	"time"
 
-	// "github.com/nakamaFramework/whot-module/constant"
-	// "github.com/nakamaFramework/whot-module/message_queue"
-	mockcodegame "github.com/nakamaFramework/whot-module/mock_code_game"
+	// "github.com/nakama-nigeria/whot-module/constant"
+	// "github.com/nakama-nigeria/whot-module/message_queue"
+	mockcodegame "github.com/nakama-nigeria/whot-module/mock_code_game"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	"github.com/nakamaFramework/whot-module/entity"
+	"github.com/nakama-nigeria/whot-module/entity"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/nakamaFramework/whot-module/api"
+	"github.com/nakama-nigeria/whot-module/api"
 	_ "golang.org/x/crypto/bcrypt"
 )
 

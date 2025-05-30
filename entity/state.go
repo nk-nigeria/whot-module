@@ -7,7 +7,7 @@ import (
 
 	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/heroiclabs/nakama-common/runtime"
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
 )
 
 const (

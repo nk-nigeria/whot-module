@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
 	"google.golang.org/protobuf/proto"
 )
 

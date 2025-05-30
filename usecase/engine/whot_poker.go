@@ -4,10 +4,10 @@ import (
 	"errors"
 	"math"
 
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
-	"github.com/nakamaFramework/whot-module/entity"
-	mockcodegame "github.com/nakamaFramework/whot-module/mock_code_game"
-	"github.com/nakamaFramework/whot-module/pkg/log"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	"github.com/nakama-nigeria/whot-module/entity"
+	mockcodegame "github.com/nakama-nigeria/whot-module/mock_code_game"
+	"github.com/nakama-nigeria/whot-module/pkg/log"
 )
 
 type Engine struct {

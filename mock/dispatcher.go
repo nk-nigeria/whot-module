@@ -2,7 +2,7 @@ package mock
 
 import (
 	"github.com/heroiclabs/nakama-common/runtime"
-	log "github.com/nakamaFramework/whot-module/pkg/log"
+	log "github.com/nakama-nigeria/whot-module/pkg/log"
 )
 
 type MockDispatcher struct {

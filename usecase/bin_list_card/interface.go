@@ -1,6 +1,6 @@
 package bin_list_card
 
-import "github.com/nakamaFramework/whot-module/entity"
+import "github.com/nakama-nigeria/whot-module/entity"
 
 var (
 	CombinePair      = 1

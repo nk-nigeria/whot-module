@@ -1,8 +1,6 @@
-module github.com/nakamaFramework/whot-module
+module github.com/nakama-nigeria/whot-module
 
 go 1.24.3
-
-replace github.com/nakamaFramework/cgp-common => ./cgp-common
 
 require (
 	github.com/bits-and-blooms/bitset v1.2.0
@@ -11,7 +9,7 @@ require (
 	github.com/heroiclabs/nakama-common v1.37.0
 	github.com/jackc/pgtype v1.8.1
 	github.com/lib/pq v1.10.9
-	github.com/nakamaFramework/cgp-common v0.0.0-00010101000000-000000000000
+	github.com/nakama-nigeria/cgp-common v0.0.0-20250530040945-51a679c17fa2
 	github.com/nats-io/nats.go v1.16.0
 	github.com/qmuntal/stateless v1.6.8
 	github.com/stretchr/testify v1.10.0

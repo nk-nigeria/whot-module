@@ -3,7 +3,7 @@ package entity
 import (
 	"fmt"
 
-	pb "github.com/nakamaFramework/cgp-common/proto/whot"
+	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
 )
 
 // WHOT sử dụng 5 suit và các số từ 1–14 + WHOT
