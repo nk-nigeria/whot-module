@@ -30,7 +30,7 @@ import (
 	"github.com/nakamaFramework/whot-module/usecase/processor"
 	gsm "github.com/nakamaFramework/whot-module/usecase/state_machine"
 	"github.com/qmuntal/stateless"
-	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -51,7 +51,7 @@ func (m *MatchHandler) MatchSignal(ctx context.Context, logger runtime.Logger, d
 	return s, ""
 }
 
-func NewMatchHandler(marshaler *protojson.MarshalOptions, unmarshaler *protojson.UnmarshalOptions) *MatchHandler {
+func NewMatchHandler(marshaler *proto.MarshalOptions, unmarshaler *proto.UnmarshalOptions) *MatchHandler {
 	fmt.Println("new match handler")
 	return &MatchHandler{
 		processor: processor.NewMatchProcessor(marshaler, unmarshaler, engine.NewWhotPokerEngine()),

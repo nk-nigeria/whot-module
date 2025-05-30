@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/nakamaFramework/whot-module/mock"
 	"github.com/nakamaFramework/whot-module/pkg/log"
-	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestMatch(t *testing.T) {
@@ -23,10 +23,8 @@ func TestMatch(t *testing.T) {
 	//	t.Logf("compare %v with %v", pair[0], pair[1])
 	//}
 
-	marshaler := &protojson.MarshalOptions{
-		UseEnumNumbers: true,
-	}
-	unmarshaler := &protojson.UnmarshalOptions{
+	marshaler := &proto.MarshalOptions{}
+	unmarshaler := &proto.UnmarshalOptions{
 		DiscardUnknown: false,
 	}
 

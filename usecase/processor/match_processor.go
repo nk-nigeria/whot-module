@@ -14,17 +14,16 @@ import (
 	"github.com/nakamaFramework/whot-module/entity"
 	"github.com/nakamaFramework/whot-module/message_queue"
 	"github.com/nakamaFramework/whot-module/usecase/engine"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
 type processor struct {
 	engine      engine.UseCase
-	marshaler   *protojson.MarshalOptions
-	unmarshaler *protojson.UnmarshalOptions
+	marshaler   *proto.MarshalOptions
+	unmarshaler *proto.UnmarshalOptions
 }
 
-func NewMatchProcessor(marshaler *protojson.MarshalOptions, unmarshaler *protojson.UnmarshalOptions, engine engine.UseCase) UseCase {
+func NewMatchProcessor(marshaler *proto.MarshalOptions, unmarshaler *proto.UnmarshalOptions, engine engine.UseCase) UseCase {
 	return &processor{
 		marshaler:   marshaler,
 		unmarshaler: unmarshaler,
@@ -331,16 +330,16 @@ func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 }
 
 func (m *processor) broadcastMessage(logger runtime.Logger, dispatcher runtime.MatchDispatcher, opCode int64, data proto.Message, presences []runtime.Presence, sender runtime.Presence, reliable bool) error {
-	dataJson, err := m.marshaler.Marshal(data)
+	dataBin, err := m.marshaler.Marshal(data)
 	if err != nil {
 		logger.Error("Error when marshaler data for broadcastMessage")
 		return err
 	}
-	err = dispatcher.BroadcastMessage(opCode, dataJson, presences, sender, true)
+	err = dispatcher.BroadcastMessage(opCode, dataBin, presences, sender, true)
 
-	logger.Info("broadcast message opcode %v, to %v, data %v", opCode, presences, string(dataJson))
+	logger.Info("broadcast message opcode %v, to %v, data %v", opCode, presences, string(dataBin))
 	if err != nil {
-		logger.Error("Error BroadcastMessage, message: %s", string(dataJson))
+		logger.Error("Error BroadcastMessage, message: %s", string(dataBin))
 		return err
 	}
 	return nil

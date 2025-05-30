@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/nakamaFramework/whot-module/constant"
-	"github.com/nakamaFramework/whot-module/message_queue"
+	// "github.com/nakamaFramework/whot-module/constant"
+	// "github.com/nakamaFramework/whot-module/message_queue"
 	mockcodegame "github.com/nakamaFramework/whot-module/mock_code_game"
 
 	"github.com/heroiclabs/nakama-common/runtime"
 	"github.com/nakamaFramework/whot-module/entity"
-	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/nakamaFramework/whot-module/api"
 	_ "golang.org/x/crypto/bcrypt"
@@ -27,14 +27,11 @@ const (
 func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, initializer runtime.Initializer) error {
 	initStart := time.Now()
 
-	marshaler := &protojson.MarshalOptions{
-		UseEnumNumbers:  true,
-		EmitUnpopulated: true,
-	}
-	unmarshaler := &protojson.UnmarshalOptions{
+	marshaler := &proto.MarshalOptions{}
+	unmarshaler := &proto.UnmarshalOptions{
 		DiscardUnknown: false,
 	}
-	message_queue.InitNatsService(logger, constant.NastEndpoint, marshaler)
+	// message_queue.InitNatsService(logger, constant.NastEndpoint, marshaler)
 	mockcodegame.InitMapMockCodeListCard(logger)
 	// cgbdb.RunMigrations(ctx, logger, db)
 	if err := initializer.RegisterMatch(entity.ModuleName, func(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule) (runtime.Match, error) {
