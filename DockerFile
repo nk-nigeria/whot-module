@@ -1,0 +1,16 @@
+# Build plugin bằng Go 1.24.3
+FROM golang:1.24.3 as builder
+
+ENV GO111MODULE=on
+ENV CGO_ENABLED=1
+
+WORKDIR /backend
+COPY . .
+
+RUN go build -buildvcs=false --trimpath --buildmode=plugin -o ./whot_plugin.so
+
+# Runtime Nakama 3.27.0
+FROM heroiclabs/nakama:3.27.0
+
+COPY --from=builder /backend/whot_plugin.so /nakama/data/modules/
+COPY --from=builder /backend/local.yml /nakama/data/

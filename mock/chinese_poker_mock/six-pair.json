@@ -1,0 +1,65 @@
+{
+    "name": "Six pair compare normal",
+    "input": {
+        "cards": [
+            {
+                "userId": "1",
+                "card": "1c;1s;3s;3c;6s;6c;8s;8c;10s;10c;12s;12c;13c"
+            },
+            {
+                "userId": "2",
+                "card": "jh;9c;js;5d;7h;7s;2d;2s;8d;8c;8s;8h;4h"
+            }
+        ]
+    },
+    "output": {
+        "results": [
+            {
+                "user_id": "1",
+                "score_result": {
+                    "front_factor": 0,
+                    "middle_factor": 0,
+                    "back_factor": 0,
+                    "front_bonus_factor": 0,
+                    "middle_bonus_factor": 0,
+                    "back_bonus_factor": 0,
+                    "natural_factor": 15,
+                    "bonusFactor": 0,
+                    "scoop": 0,
+                    "num_hand_win": 3,
+                    "total_factor": 15
+                },
+                "point_result": {
+                    "type": 1
+                }
+            },
+            {
+                "user_id": "2",
+                "score_result": {
+                    "front_factor": 0,
+                    "middle_factor": 0,
+                    "back_factor": 0,
+                    "front_bonus_factor": 0,
+                    "middle_bonus_factor": 0,
+                    "back_bonus_factor": 0,
+                    "natural_factor": -15,
+                    "bonusFactor": 0,
+                    "scoop": 0,
+                    "num_hand_win": 0,
+                    "total_factor": -15
+                },
+                "point_result": {
+                    "type": 0
+                }
+            }
+        ],
+        "bonuses": [
+            {
+                "win": "1",
+                "lose": "2",
+                "type": 203,
+                "factor": 15
+            }
+        ]
+    }    
+}

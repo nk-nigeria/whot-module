@@ -1,0 +1,12 @@
+#grand dragon
+5c;7x;13s;2t;2q;8c;8s;8t;8q;4t;5x;11c;20w
+#dragon
+1c;1t;13x;4t;4s;5c;5t;7x;7t;10s;10q;13s;11c
+#same color
+1c;10q;13x;8q;7c;8s;10t;2t;5t;13s;13q;11c;5q
+#six pair
+1c;3x;5s;7t;8q;11c;13x;2s;4t;5q;8c;10x;20w
+#three straights
+3c;5x;7s;10t;11q;13c;2x;4s;5t;8q;10c;13x;20w
+#three flushes
+6c;8x;10s;12t;1q;3c;5x;7s;8t;11q;13c;2x;20w

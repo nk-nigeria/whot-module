@@ -1,0 +1,83 @@
+{
+    "name": "Front 3 kind Mid Straight Flus Back Straight Flus",
+    "input": {
+        "cards": [
+            {
+                "userId": "1",
+                "card": "ks;kh;kd; 6h;7h;8h;9h;10h; 8s;9s;10s;11s;12s"
+            },
+            {
+                "userId": "2",
+                "card": "9d;1d;5c;5h;2h;qh;3h;qd;4c;4s;6c;6s;6h"
+            }
+        ]
+    },
+    "output": {
+        "results": [
+            {
+                "user_id": "1",
+                "score_result": {
+                    "front_factor": 1,
+                    "middle_factor": 1,
+                    "back_factor": 1,
+                    "front_bonus_factor": 3,
+                    "middle_bonus_factor": 10,
+                    "back_bonus_factor": 5,
+                    "natural_factor": 0,
+                    "bonusFactor": 0,
+                    "scoop": 1,
+                    "num_hand_win": 3,
+                    "total_factor": 24
+                },
+                "point_result": {
+                    "type": 0
+                }
+            },
+            {
+                "user_id": "2",
+                "score_result": {
+                    "front_factor": -1,
+                    "middle_factor": -1,
+                    "back_factor": -1,
+                    "front_bonus_factor": -3,
+                    "middle_bonus_factor": -10,
+                    "back_bonus_factor": -5,
+                    "natural_factor": 0,
+                    "bonusFactor": 0,
+                    "scoop": -1,
+                    "num_hand_win": 0,
+                    "total_factor": -24
+                },
+                "point_result": {
+                    "type": 0
+                }
+            }
+        ],
+        "bonuses": [
+            {
+                "win": "1",
+                "lose": "2",
+                "type": 2,
+                "factor": 3
+            },
+            {
+                "win": "1",
+                "lose": "2",
+                "type": 102,
+                "factor": 3
+            },
+            {
+                "win": "1",
+                "lose": "2",
+                "type": 104,
+                "factor": 5
+            },
+            {
+                "win": "1",
+                "lose": "2",
+                "type": 106,
+                "factor": 10
+            }
+        ]
+    }
+}

@@ -1,0 +1,141 @@
+{
+    "name": "Win all 4 player, 3 misset",
+    "input": {
+        "cards": [
+            {
+                "userId": "1",
+                "card": "6c;7c;8c; 3h;5s;kh;js;jc; 6s;qh;qs;qc;4h"
+            },
+            {
+                "userId": "2",
+                "card": "1h;10h;kc; 8h;6h;8s;10d;2d; 5d;ks;qd;jh;5c"
+            },
+            {
+                "userId": "3",
+                "card": "1h;10h;kc; 8h;6h;8s;10d;2d; 5d;ks;qd;jh;5c"
+            },
+            {
+                "userId": "4",
+                "card": "1h;10h;kc; 8h;6h;8s;10d;2d; 5d;ks;qd;jh;5c"
+            }
+        ]
+    },
+    "output": {
+        "results": [
+            {
+                "user_id": "1",
+                "score_result": {
+                    "front_factor": 0,
+                    "middle_factor": 0,
+                    "back_factor": 0,
+                    "front_bonus_factor": 0,
+                    "middle_bonus_factor": 0,
+                    "back_bonus_factor": 0,
+                    "natural_factor": 0,
+                    "bonusFactor": 0,
+                    "scoop": 3,
+                    "num_hand_win": 0,
+                    "total_factor": 72
+                },
+                "point_result": {
+                    "type": 0
+                }
+            },
+            {
+                "user_id": "2",
+                "score_result": {
+                    "front_factor": 0,
+                    "middle_factor": 0,
+                    "back_factor": 0,
+                    "front_bonus_factor": 0,
+                    "middle_bonus_factor": 0,
+                    "back_bonus_factor": 0,
+                    "natural_factor": 0,
+                    "bonusFactor": 0,
+                    "scoop": -1,
+                    "num_hand_win": 0,
+                    "total_factor": -24
+                },
+                "point_result": {
+                    "type": -1
+                }
+            },
+            {
+                "user_id": "3",
+                "score_result": {
+                    "front_factor": 0,
+                    "middle_factor": 0,
+                    "back_factor": 0,
+                    "front_bonus_factor": 0,
+                    "middle_bonus_factor": 0,
+                    "back_bonus_factor": 0,
+                    "natural_factor": 0,
+                    "bonusFactor": 0,
+                    "scoop": -1,
+                    "num_hand_win": 0,
+                    "total_factor": -24
+                },
+                "point_result": {
+                    "type": -1
+                }
+            },
+            {
+                "user_id": "4",
+                "score_result": {
+                    "front_factor": 0,
+                    "middle_factor": 0,
+                    "back_factor": 0,
+                    "front_bonus_factor": 0,
+                    "middle_bonus_factor": 0,
+                    "back_bonus_factor": 0,
+                    "natural_factor": 0,
+                    "bonusFactor": 0,
+                    "scoop": -1,
+                    "num_hand_win": 0,
+                    "total_factor": -24
+                },
+                "point_result": {
+                    "type": -1
+                }
+            }
+        ],
+        "bonuses": [
+            {
+                "win": "1",
+                "lose": "2",
+                "type": 1,
+                "factor": 6
+            },
+            {
+                "win": "1",
+                "lose": "3",
+                "type": 1,
+                "factor": 6
+            },
+            {
+                "win": "1",
+                "lose": "4",
+                "type": 1,
+                "factor": 6
+            },
+            {
+                "win": "1",
+                "lose": "2",
+                "type": 3,
+                "factor": 18
+            },   
+            {
+                "win": "1",
+                "lose": "3",
+                "type": 3,
+                "factor": 18
+            },
+            {
+                "win": "1",
+                "lose": "4",
+                "type": 3,
+                "factor": 18
+            }
+        ]
+    }
+}
