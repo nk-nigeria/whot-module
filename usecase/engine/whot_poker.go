@@ -155,14 +155,26 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 	case entity.CardValueWhot: // 20
 		effect = entity.EffectWhot
 		s.WaitingForWhotShape = true
+	default:
+		s.CurrentTurn = s.GetNextPlayerClockwise(userId)
 	}
-	// Cập nhật bài trên bàn
+
 	s.TopCard = card
 	s.CurrentEffect = effect
 
 	// Xóa lá bài đã đánh khỏi bài của người chơi
 	playerCards.Cards = append(playerCards.Cards[:cardIndex], playerCards.Cards[cardIndex+1:]...)
 	s.Cards[userId] = playerCards
+
+	if s.AutoPlayCounts == nil {
+		s.AutoPlayCounts = make(map[string]int)
+	}
+	s.AutoPlayCounts[userId] = 0
+
+	// if s.LastInteractions == nil {
+	//     s.LastInteractions = make(map[string]int64)
+	// }
+	// s.LastInteractions[userId] = time.Now().Unix()
 
 	// Kiểm tra người chơi đã hết bài chưa
 	if len(playerCards.Cards) == 0 {
@@ -196,6 +208,11 @@ func (e *Engine) DrawCardsFromDeck(s *entity.MatchState, userID string) (int, er
 	}
 
 	s.Cards[userID].Cards = append(s.Cards[userID].Cards, card.Cards...)
+
+	if s.AutoPlayCounts == nil {
+		s.AutoPlayCounts = make(map[string]int)
+	}
+	s.AutoPlayCounts[userID] = 0
 
 	// Xác định người chơi tiếp theo
 	if !drawingPenalty {
@@ -238,6 +255,39 @@ func (e *Engine) ChooseWhotShape(s *entity.MatchState, userID string, shape pb.C
 	s.TopCard.Suit = shape
 	s.WaitingForWhotShape = false
 
+	return nil
+}
+
+func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.Card {
+	userCards := s.Cards[userId]
+	if userCards == nil || len(userCards.Cards) == 0 {
+		return nil
+	}
+
+	topCard := s.TopCard
+
+	// Thực hiện logic tìm bài phù hợp:
+	// 1. Ưu tiên lá bài có cùng số (rank)
+	// 2. Ưu tiên lá bài có cùng suit
+	// 3. Nếu có lá Whot (joker), chọn Whot
+
+	for _, card := range userCards.Cards {
+		if card.Rank == topCard.Rank {
+			return card
+		}
+	}
+
+	for _, card := range userCards.Cards {
+		if card.Suit == topCard.Suit {
+			return card
+		}
+	}
+
+	for _, card := range userCards.Cards {
+		if card.Rank == pb.CardRank_RANK_20 {
+			return card
+		}
+	}
 	return nil
 }
 

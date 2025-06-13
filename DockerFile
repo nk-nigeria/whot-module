@@ -1,5 +1,5 @@
 # Build plugin bằng Go 1.24.3
-FROM golang:1.24.3 as builder
+FROM heroiclabs/nakama-pluginbuilder:3.27.0 AS builder
 
 ENV GO111MODULE=on
 ENV CGO_ENABLED=1

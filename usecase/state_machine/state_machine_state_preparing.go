@@ -26,7 +26,6 @@ func (s *StatePreparing) Enter(ctx context.Context, args ...interface{}) error {
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
 	state := procPkg.GetState()
 	log.GetLogger().Info("state %v", state.Presences)
-	state.SetUpCountDown(preparingTimeout)
 	// remove all user not interact 2 game continue
 	listPrecense := state.GetPresenceNotInteract(2)
 	if len(listPrecense) > 0 {
@@ -45,14 +44,14 @@ func (s *StatePreparing) Enter(ctx context.Context, args ...interface{}) error {
 		procPkg.GetDispatcher(),
 		state,
 	)
-
+	state.SetUpCountDown(preparingTimeout)
 	procPkg.GetProcessor().NotifyUpdateGameState(
 		state,
 		procPkg.GetLogger(),
 		procPkg.GetDispatcher(),
 		&pb.UpdateGameState{
 			State:     pb.GameState_GameStatePreparing,
-			CountDown: int64(state.GetRemainCountDown()),
+			CountDown: int64(preparingTimeout.Seconds()),
 		},
 	)
 

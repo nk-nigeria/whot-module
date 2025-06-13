@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	ModuleName        = "whot-poker"
+	ModuleName        = "whot-game"
 	MaxPresenceCard   = 6
 	JackpotPercentTax = 1 // 1%
 )

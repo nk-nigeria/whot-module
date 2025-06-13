@@ -1,5 +1,7 @@
 module github.com/nakama-nigeria/whot-module
 
+replace github.com/nakama-nigeria/cgp-common => ./cgp-common
+
 go 1.24.3
 
 require (
@@ -7,7 +9,7 @@ require (
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/emirpasic/gods v1.18.1
 	github.com/heroiclabs/nakama-common v1.37.0
-	github.com/jackc/pgtype v1.8.1
+	github.com/jackc/pgtype v1.14.0
 	github.com/lib/pq v1.10.9
 	github.com/nakama-nigeria/cgp-common v0.0.0-20250530040945-51a679c17fa2
 	github.com/nats-io/nats.go v1.16.0

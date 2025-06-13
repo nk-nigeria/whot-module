@@ -2,6 +2,7 @@ package state_machine
 
 import (
 	"context"
+	"time"
 
 	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
 	log "github.com/nakama-nigeria/whot-module/pkg/log"
@@ -51,7 +52,7 @@ func (s *StatePlay) Exit(_ context.Context, _ ...interface{}) error {
 }
 
 func (s *StatePlay) Process(ctx context.Context, args ...interface{}) error {
-	// log.GetLogger().Info("[play] processing")
+	log.GetLogger().Info("[play] processing")
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
 
 	state := procPkg.GetState()
@@ -61,6 +62,11 @@ func (s *StatePlay) Process(ctx context.Context, args ...interface{}) error {
 		processor := procPkg.GetProcessor()
 		logger := procPkg.GetLogger()
 		dispatcher := procPkg.GetDispatcher()
+		if state.TurnReadyAt > 0 && float64(time.Now().Unix()) >= state.TurnReadyAt {
+			processor.UpdateTurn(logger, dispatcher, state)
+			state.TurnReadyAt = 0
+		}
+		processor.CheckAndHandleTurnTimeout(ctx, logger, dispatcher, state)
 		for _, message := range messages {
 			switch pb.OpCodeRequest(message.GetOpCode()) {
 			case pb.OpCodeRequest_OPCODE_REQUEST_PLAY_CARD:

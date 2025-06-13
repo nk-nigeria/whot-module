@@ -15,7 +15,7 @@ func (m *MatchHandler) MatchJoinAttempt(ctx context.Context, logger runtime.Logg
 	logger.Info("match join attempt, state=%v, meta=%v", s, metadata)
 
 	// check password
-	if s.Label.Open == 0 {
+	if s.Label.Open == false {
 		logger.Info("match protect with password, check password")
 		joinPassword := metadata["password"]
 		if joinPassword != s.Label.Password {
@@ -50,7 +50,7 @@ func (m *MatchHandler) MatchJoinAttempt(ctx context.Context, logger runtime.Logg
 	if err != nil {
 		return s, false, status.Error(codes.Internal, "read chip balance failed").Error()
 	}
-	if wallet.Chips < int64(s.Label.Bet) {
+	if wallet.Chips < int64(s.Label.Bet.GetMarkUnit()) {
 		logger.Warn("[Reject] reject allow user %s join game, not enough chip join game, balance user chip %d , game bet %d",
 			presence.GetUserId(), wallet.Chips, s.Label.Bet)
 		return s, false, status.Error(codes.Internal, "chip balance not enough").Error()

@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/heroiclabs/nakama-common/runtime"
+	pb1 "github.com/nakama-nigeria/cgp-common/proto"
 	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
 	"github.com/nakama-nigeria/whot-module/api/presenter"
 	"github.com/nakama-nigeria/whot-module/cgbdb"
@@ -64,52 +65,33 @@ func (m *MatchHandler) GetState() stateless.State {
 }
 
 func (m *MatchHandler) MatchInit(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, params map[string]interface{}) (interface{}, int, string) {
-	logger.Info("match init: %v", params)
-	bet, ok := params["bet"].(int32)
+	rawLabel, ok := params["label"].(string) // đọc label từ param
 	if !ok {
-		logger.Error("invalid match init parameter \"bet\"")
+		logger.Error("match init label not found")
 		return nil, 0, ""
 	}
 
-	name, ok := params["name"].(string)
-	if !ok {
-		logger.Warn("invalid match init parameter \"name\"")
-		//return nil, 0, ""
+	matchInfo := &pb1.Match{}
+	err := proto.Unmarshal([]byte(rawLabel), matchInfo)
+	if err != nil {
+		logger.Error("failed to unmarshal match label: %v", err)
+		return nil, 0, ""
 	}
+	logger.Info("match init: %+v", matchInfo)
 
-	password, ok := params["password"].(string)
-	if !ok {
-		logger.Warn("invalid match init parameter \"password\"")
-		//return nil, 0, ""
-	}
-
-	open := int32(1)
-	if password != "" {
-		open = 0
-	}
-
-	mockCodeCard, _ := params["mock_code_card"].(int32)
-
-	label := &entity.MatchLabel{
-		Open:         open,
-		Bet:          bet,
-		Code:         entity.ModuleName,
-		Name:         name,
-		Password:     password,
-		MaxSize:      entity.MaxPresences,
-		MockCodeCard: mockCodeCard,
-	}
-
-	labelJSON, err := json.Marshal(label)
+	matchInfo.Name = entity.ModuleName
+	matchInfo.MaxSize = entity.MaxPresences
+	matchJson, err := json.Marshal(matchInfo)
 	if err != nil {
 		logger.Error("match init json label failed ", err)
 		return nil, tickRate, ""
 	}
 
-	logger.Info("match init label= %s", string(labelJSON))
+	logger.Info("match init label= %s", string(matchJson))
 
-	matchState := entity.NewMatchState(label)
-	// init jp treasure
+	matchState := entity.NewMatchState(matchInfo)
+
+	// init jackpot nếu có
 	jpTreasure, _ := cgbdb.GetJackpot(ctx, logger, db, entity.ModuleName)
 	if jpTreasure != nil {
 		matchState.SetJackpotTreasure(&pb.Jackpot{
@@ -117,11 +99,12 @@ func (m *MatchHandler) MatchInit(ctx context.Context, logger runtime.Logger, db 
 			Chips:    jpTreasure.Chips,
 		})
 	}
+
 	// fire idle event
 	procPkg := packager.NewProcessorPackage(&matchState, m.processor, logger, nil, nil, nil, nil, nil)
 	m.machine.TriggerIdle(packager.GetContextWithProcessorPackager(procPkg))
 
-	return &matchState, tickRate, string(labelJSON)
+	return &matchState, tickRate, string(matchJson)
 }
 
 func (m *MatchHandler) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, messages []runtime.MatchData) interface{} {
@@ -148,5 +131,6 @@ func (m *MatchHandler) MatchLoop(ctx context.Context, logger runtime.Logger, db 
 
 func (m *MatchHandler) MatchTerminate(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, graceSeconds int) interface{} {
 	logger.Info("match terminate, state=%v")
+	m.processor.ProcessMatchTerminate(ctx, logger, nk, db, dispatcher, state.(*entity.MatchState))
 	return state
 }

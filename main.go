@@ -40,6 +40,64 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 		return err
 	}
 
+	// initializer.RegisterMatchmakerMatched(func(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, entries []runtime.MatchmakerEntry) (string, error) {
+	// logger.Info("MatchmakerMatched triggered with %d players", len(entries))
+
+	// props := entries[0].GetProperties()
+
+	// name := "unknown"
+	// if v, ok := props["name"]; ok {
+	// 	if str, ok := v.(string); ok {
+	// 		name = str
+	// 	} else {
+	// 		logger.Warn("name không phải string")
+	// 	}
+	// }
+
+	// password := ""
+	// if v, ok := props["password"]; ok {
+	// 	if str, ok := v.(string); ok {
+	// 		password = str
+	// 	} else {
+	// 		logger.Warn("password không phải string")
+	// 	}
+	// }
+
+	// var markUnit int32 = 0
+	// if v, ok := props["bet"]; ok {
+	// 	if f64, ok := v.(float64); ok {
+	// 		markUnit = int32(f64)
+	// 	} else {
+	// 		logger.Warn("bet không phải float64")
+	// 	}
+	// } else {
+	// 	logger.Warn("Không tìm thấy 'bet'")
+	// }
+
+	// matchInfo := &pb.Match{
+	// 	Size:     2,
+	// 	MaxSize:  4,
+	// 	Name:     name,
+	// 	Open:     len(password) > 0,
+	// 	Password: password,
+	// 	NumBot:   1,
+	// 	MarkUnit: markUnit,
+	// }
+	// data, err := utilities.EncodeBase64Proto(matchInfo)
+	// if err != nil {
+	// 	logger.Error("failed to encode match data: %v", err)
+	// 	return "", err
+	// }
+
+	// args := map[string]any{"data": data}
+	// matchId, err := nk.MatchCreate(ctx, entity.ModuleName, args)
+	// if err != nil {
+	// 	logger.Error("failed to create match: %v", err)
+	// 	return "", err
+	// }
+	// return matchId, nil
+	// })
+
 	if err := api.RegisterSessionEvents(db, nk, initializer); err != nil {
 		return err
 	}

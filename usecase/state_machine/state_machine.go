@@ -34,8 +34,8 @@ const (
 
 const (
 	idleTimeout      = time.Second * 15
-	preparingTimeout = time.Second * 10
-	playTimeout      = time.Second * 60 * 2
+	preparingTimeout = time.Second * 5
+	playTimeout      = time.Second * 60 * 5
 	//playTimeout      = time.Second * 10
 	rewardTimeout = time.Second * 15
 	//rewardTimeout    = time.Second * 10
@@ -183,6 +183,7 @@ func (m *Machine) TriggerIdle(ctx context.Context, args ...interface{}) error {
 }
 
 type FireFn func(ctx context.Context, trigger stateless.Trigger, args ...interface{}) error
+
 type StateBase struct {
 	fireFn FireFn
 }

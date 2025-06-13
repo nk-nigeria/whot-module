@@ -4,9 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/heroiclabs/nakama-common/api"
 	"github.com/heroiclabs/nakama-common/runtime"
+	"github.com/nakama-nigeria/cgp-common/define"
 	pb1 "github.com/nakama-nigeria/cgp-common/proto"
 	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
 	"github.com/nakama-nigeria/whot-module/cgbdb"
@@ -15,6 +19,7 @@ import (
 	"github.com/nakama-nigeria/whot-module/message_queue"
 	"github.com/nakama-nigeria/whot-module/usecase/engine"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type processor struct {
@@ -31,117 +36,44 @@ func NewMatchProcessor(marshaler *proto.MarshalOptions, unmarshaler *proto.Unmar
 	}
 }
 
-// Call when client request or timeout
 func (m *processor) ProcessNewGame(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) {
 
 	m.engine.NewGame(s)
 	// chia bài và gửi cho từng người chơi
 	if err := m.engine.Deal(s); err == nil {
 		for k, v := range s.Cards {
-			buf, err := m.marshaler.Marshal(&pb.UpdateDeal{
-				PresenceCard: &pb.PresenceCards{
-					Presence: k,
-					Cards:    v.Cards,
-				},
-				TopCard: s.TopCard,
-			})
 
-			if err != nil {
-				logger.Error("error encoding message: %v", err)
-			} else {
-				presence, found := s.PlayingPresences.Get(k)
-				if found {
-					_ = dispatcher.BroadcastMessage(int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL), buf, []runtime.Presence{presence.(runtime.Presence)}, nil, true)
+			presence, found := s.PlayingPresences.Get(k)
+			if found {
+				preCardMsg := &pb.UpdateDeal{
+					PresenceCard: &pb.PresenceCards{
+						Presence: k,
+						Cards:    v.Cards,
+					},
+					TopCard:  s.TopCard,
+					IdDealer: s.DealerId,
+				}
+				err := m.broadcastMessage(logger, dispatcher,
+					int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL), preCardMsg,
+					[]runtime.Presence{presence.(runtime.Presence)}, nil, true)
+				if err != nil {
+					logger.Error("failed to broadcast UpdateDeal for presence %s: %v", k, err)
 				}
 			}
+
 		}
 	}
-	m.UpdateTurn(logger, dispatcher, s)
-
-}
-
-func (m *processor) ProcessFinishGame(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule, db *sql.DB, dispatcher runtime.MatchDispatcher, s *entity.MatchState) {
-	logger.Info("process finish game len cards %v", len(s.Cards))
-	pbGameState := pb.UpdateGameState{
-		State: pb.GameState_GameStateReward,
-	}
-	pbGameState.PresenceCards = make([]*pb.PresenceCards, 0, len(s.Cards))
-	for k := range s.Cards {
-
-		presenceCards := pb.PresenceCards{
-			Presence: k,
-		}
-		pbGameState.PresenceCards = append(pbGameState.PresenceCards, &presenceCards)
-	}
-
-	m.broadcastMessage(
-		logger, dispatcher,
-		int64(pb.OpCodeUpdate_OPCODE_UPDATE_GAME_STATE),
-		&pbGameState, nil, nil, true)
-
-	// update finish
-	updateFinish := m.engine.Finish(s)
-	m.readJackpotTreasure(ctx, nk, logger, db, dispatcher, s, updateFinish)
-	balanceResult := m.calcRewardForUserPlaying(ctx, nk, logger, db, dispatcher, s, updateFinish)
-	if balanceResult == nil {
-		matchId, _ := ctx.Value(runtime.RUNTIME_CTX_MATCH_ID).(string)
-		logger.
-			WithField("jackpot game", entity.ModuleName).
-			WithField("match id", matchId).
-			// WithField("user win jackpot", updateFinish.Jackpot.GetUserId()).
-			Error("calc reward failed")
-		return
-	}
-	m.handlerJackpotProcess(ctx, logger, nk, db, s, updateFinish, balanceResult)
-	// balanceResult.Jackpot = updateFinish.Jackpot
-	// read new treasure after update chips win to jp treasure
-	m.readJackpotTreasure(ctx, nk, logger, db, dispatcher, s, updateFinish)
-	// s.SetJackpotTreasure(updateFinish.JpTreasure)
-	m.updateChipByResultGameFinish(ctx, logger, nk, balanceResult) // summary balance ủe
-	// summary balance user if win jackpot
-	// if updateFinish.Jackpot != nil {
-	// 	for _, b := range balanceResult.GetUpdates() {
-	// 		if b.GetUserId() == updateFinish.Jackpot.UserId {
-	// 			b.AmountChipAdd += updateFinish.Jackpot.Chips
-	// 			b.AmountChipCurrent += updateFinish.Jackpot.Chips
-	// 			break
-	// 		}
-	// 	}
-	// }
-	// s.SetBalanceResult(balanceResult)
-	m.broadcastMessage(
-		logger,
-		dispatcher,
-		int64(pb.OpCodeUpdate_OPCODE_UPDATE_UNSPECIFIED),
-		balanceResult,
-		nil, nil, true,
-	)
-	m.broadcastMessage(
-		logger, dispatcher,
-		int64(pb.OpCodeUpdate_OPCODE_UPDATE_FINISH),
-		updateFinish, nil, nil, true)
-	logger.Info("process finish game done %v", updateFinish)
+	s.TurnReadyAt = float64(time.Now().Unix()) + 2
 }
 
 func (m *processor) UpdateTurn(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) {
+
+	s.TurnExpireAt = time.Now().Unix() + int64(s.TimeTurn)
 	turnUpdate := &pb.UpdateTurn{
 		UserId:    s.CurrentTurn,
-		Countdown: int64(s.GetRemainCountDown()),
+		Countdown: int64(s.TimeTurn),
 	}
-
-	buf, err := m.marshaler.Marshal(turnUpdate)
-	if err != nil {
-		logger.Error("error encoding UpdateTurn: %v", err)
-		return
-	}
-
-	err = dispatcher.BroadcastMessage(
-		int64(pb.OpCodeUpdate_OPCODE_UPDATE_TURN),
-		buf,
-		nil,
-		nil,
-		true,
-	)
+	err := m.broadcastMessage(logger, dispatcher, int64(pb.OpCodeUpdate_OPCODE_UPDATE_TURN), turnUpdate, nil, nil, true)
 	if err != nil {
 		logger.Error("failed to broadcast UpdateTurn: %v", err)
 	}
@@ -196,14 +128,10 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 						},
 					}
 
-					buf, _ := m.marshaler.Marshal(dealMsg)
-					dispatcher.BroadcastMessage(
-						int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL),
-						buf,
-						[]runtime.Presence{presence.(runtime.Presence)},
-						nil,
-						true,
-					)
+					m.broadcastMessage(
+						logger, dispatcher,
+						int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL), dealMsg,
+						[]runtime.Presence{presence.(runtime.Presence)}, nil, true)
 
 					// Thông báo công khai rằng người này đã rút bài
 					drawMsg := &pb.UpdateCardState{
@@ -225,9 +153,9 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 	}
 
 	// Cập nhật người chơi tiếp theo nếu không đang chờ chọn hình Whot
-	if !s.WaitingForWhotShape {
-		m.UpdateTurn(logger, dispatcher, s)
-	}
+	// if !s.WaitingForWhotShape {
+
+	// }
 
 	// Kiểm tra người chiến thắng
 	if s.WinnerId != "" {
@@ -237,9 +165,9 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 
 		m.NotifyUpdateGameState(s, logger, dispatcher, gameStateMsg)
 	}
+	m.UpdateTurn(logger, dispatcher, s)
 }
 
-// Xử lý chọn hình sau khi đánh lá Whot
 func (m *processor) ChooseWhotShape(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
 	userID := message.GetUserId()
 
@@ -301,15 +229,9 @@ func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 				Cards:    s.Cards[userID].Cards,
 			},
 		}
-
-		buf, _ := m.marshaler.Marshal(dealMsg)
-		dispatcher.BroadcastMessage(
-			int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL),
-			buf,
-			[]runtime.Presence{playerPresence.(runtime.Presence)},
-			nil,
-			true,
-		)
+		m.broadcastMessage(logger, dispatcher,
+			int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL), dealMsg,
+			[]runtime.Presence{playerPresence.(runtime.Presence)}, nil, true)
 	}
 
 	// Thông báo công khai về việc rút bài
@@ -329,23 +251,213 @@ func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 	m.UpdateTurn(logger, dispatcher, s)
 }
 
-func (m *processor) broadcastMessage(logger runtime.Logger, dispatcher runtime.MatchDispatcher, opCode int64, data proto.Message, presences []runtime.Presence, sender runtime.Presence, reliable bool) error {
-	dataBin, err := m.marshaler.Marshal(data)
+func (m *processor) CheckAndHandleTurnTimeout(ctx context.Context, logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) bool {
+	// Kiểm tra xem đã hết thời gian lượt chưa
+	if s.TurnExpireAt <= 0 || time.Now().Unix() <= s.TurnExpireAt {
+		return false
+	}
+
+	userID := s.CurrentTurn
+	logger.Info("Turn timeout for user %s, auto-playing", userID)
+
+	// Tăng số lần đánh hộ liên tiếp
+	if s.AutoPlayCounts == nil {
+		s.AutoPlayCounts = make(map[string]int)
+	}
+	s.AutoPlayCounts[userID]++
+
+	// Thông báo cho tất cả người chơi rằng server đang đánh hộ
+	// autoPlayMsg := &pb.UpdateCardState{
+	// 	UserId:  userID,
+	// 	Event:   pb.CardEvent_AUTO_PLAY, // Cần thêm AUTO_PLAY vào CardEvent enum
+	// 	TopCard: s.TopCard,
+	// }
+
+	// m.broadcastMessage(
+	// 	logger, dispatcher,
+	// 	int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
+	// 	autoPlayMsg, nil, nil, true,
+	// )
+
+	// Thực hiện đánh hộ - thử tìm bài phù hợp để đánh
+	userCards := s.Cards[userID]
+	if userCards != nil && len(userCards.Cards) > 0 {
+		// Tìm bài phù hợp để đánh
+		playableCard := m.engine.FindPlayableCard(s, userID)
+
+		if playableCard != nil {
+			// Nếu có bài phù hợp, đánh bài đó
+			effect, err := m.engine.PlayCard(s, userID, playableCard)
+			if err == nil {
+				// Thông báo đánh bài thành công
+				cardStateMsg := &pb.UpdateCardState{
+					UserId:       userID,
+					Event:        pb.CardEvent_PLAY,
+					TopCard:      s.TopCard,
+					Effect:       pb.CardEffect(effect),
+					PickPenalty:  int32(s.PickPenalty),
+					TargetUserId: s.EffectTarget,
+					IsAutoPlay:   true,
+				}
+
+				m.broadcastMessage(
+					logger, dispatcher,
+					int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
+					cardStateMsg, nil, nil, true,
+				)
+
+				// Xử lý đặc biệt General Market nếu cần
+				if effect == entity.EffectGeneralMarket {
+					// Xử lý General Market tương tự như trong hàm PlayCard
+					// ...
+				}
+
+				// Nếu đánh lá Whot, tự chọn một hình mặc định
+				if s.WaitingForWhotShape {
+					s.WaitingForWhotShape = false
+					// s.TopCard.Suit = pb.CardSuit_SUIT_CIRCLE // Mặc định chọn CIRCLE
+
+					whotChoiceMsg := &pb.UpdateCardState{
+						UserId:     userID,
+						Event:      pb.CardEvent_PLAY,
+						Effect:     pb.CardEffect_CHOICE_SHAPE_GHOST,
+						TopCard:    s.TopCard,
+						IsAutoPlay: true,
+					}
+
+					m.broadcastMessage(
+						logger, dispatcher,
+						int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
+						whotChoiceMsg, nil, nil, true,
+					)
+				}
+
+				// Cập nhật lượt tiếp theo nếu không chờ chọn hình Whot
+				if !s.WaitingForWhotShape {
+					s.CurrentTurn = s.GetNextPlayerClockwise(userID)
+					m.UpdateTurn(logger, dispatcher, s)
+				}
+
+				return true
+			}
+		}
+	}
+
+	// Nếu không tìm được bài phù hợp hoặc có lỗi khi đánh bài, rút bài
+	cardsToDraw, err := m.engine.DrawCardsFromDeck(s, userID)
 	if err != nil {
-		logger.Error("Error when marshaler data for broadcastMessage")
+		logger.Error("Error auto drawing card: %v", err)
+	}
+
+	// Thông báo cho người chơi về bài mới
+	playerPresence, found := s.PlayingPresences.Get(userID)
+	if found {
+		dealMsg := &pb.UpdateDeal{
+			PresenceCard: &pb.PresenceCards{
+				Presence: userID,
+				Cards:    s.Cards[userID].Cards,
+			},
+		}
+		m.broadcastMessage(logger, dispatcher,
+			int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL), dealMsg,
+			[]runtime.Presence{playerPresence.(runtime.Presence)}, nil, true)
+	}
+
+	// Thông báo công khai về việc rút bài
+	drawMsg := &pb.UpdateCardState{
+		UserId:      userID,
+		Event:       pb.CardEvent_DRAW,
+		TopCard:     s.TopCard,
+		PickPenalty: int32(cardsToDraw),
+		IsAutoPlay:  true,
+	}
+
+	m.broadcastMessage(
+		logger, dispatcher,
+		int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
+		drawMsg, nil, nil, true,
+	)
+
+	// Chuyển lượt cho người tiếp theo
+	s.CurrentTurn = s.GetNextPlayerClockwise(userID)
+	m.UpdateTurn(logger, dispatcher, s)
+
+	return true
+}
+
+func (m *processor) ProcessFinishGame(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule, db *sql.DB, dispatcher runtime.MatchDispatcher, s *entity.MatchState) {
+	logger.Info("process finish game len cards %v", len(s.Cards))
+	pbGameState := pb.UpdateGameState{
+		State: pb.GameState_GameStateReward,
+	}
+	pbGameState.PresenceCards = make([]*pb.PresenceCards, 0, len(s.Cards))
+	for k := range s.Cards {
+
+		presenceCards := pb.PresenceCards{
+			Presence: k,
+		}
+		pbGameState.PresenceCards = append(pbGameState.PresenceCards, &presenceCards)
+	}
+
+	m.NotifyUpdateGameState(s, logger, dispatcher, &pbGameState)
+	// update finish
+	updateFinish := m.engine.Finish(s)
+	m.readJackpotTreasure(ctx, nk, logger, db, dispatcher, s, updateFinish)
+	balanceResult := m.calcRewardForUserPlaying(ctx, nk, logger, db, dispatcher, s, updateFinish)
+	if balanceResult == nil {
+		matchId, _ := ctx.Value(runtime.RUNTIME_CTX_MATCH_ID).(string)
+		logger.
+			WithField("jackpot game", entity.ModuleName).
+			WithField("match id", matchId).
+			// WithField("user win jackpot", updateFinish.Jackpot.GetUserId()).
+			Error("calc reward failed")
+		return
+	}
+	m.handlerJackpotProcess(ctx, logger, nk, db, s, updateFinish, balanceResult)
+	// balanceResult.Jackpot = updateFinish.Jackpot
+	// read new treasure after update chips win to jp treasure
+	m.readJackpotTreasure(ctx, nk, logger, db, dispatcher, s, updateFinish)
+	// s.SetJackpotTreasure(updateFinish.JpTreasure)
+	m.updateChipByResultGameFinish(ctx, logger, nk, balanceResult) // summary balance ủe
+	// summary balance user if win jackpot
+	// if updateFinish.Jackpot != nil {
+	// 	for _, b := range balanceResult.GetUpdates() {
+	// 		if b.GetUserId() == updateFinish.Jackpot.UserId {
+	// 			b.AmountChipAdd += updateFinish.Jackpot.Chips
+	// 			b.AmountChipCurrent += updateFinish.Jackpot.Chips
+	// 			break
+	// 		}
+	// 	}
+	// }
+	// s.SetBalanceResult(balanceResult)
+
+	m.broadcastMessage(logger, dispatcher,
+		int64(pb.OpCodeUpdate_OPCODE_UPDATE_UNSPECIFIED), balanceResult,
+		nil, nil, true,
+	)
+	m.broadcastMessage(logger, dispatcher,
+		int64(pb.OpCodeUpdate_OPCODE_UPDATE_FINISH), updateFinish,
+		nil, nil, true)
+	logger.Info("process finish game done %v", updateFinish)
+}
+
+func (m *processor) broadcastMessage(logger runtime.Logger, dispatcher runtime.MatchDispatcher, opCode int64, data proto.Message, presences []runtime.Presence, sender runtime.Presence, reliable bool) error {
+	dataByte, err := m.marshaler.Marshal(data)
+	if err != nil {
 		return err
 	}
-	err = dispatcher.BroadcastMessage(opCode, dataBin, presences, sender, true)
+	err = dispatcher.BroadcastMessage(opCode, dataByte, presences, sender, true)
 
-	logger.Info("broadcast message opcode %v, to %v, data %v", opCode, presences, string(dataBin))
+	logger.Info("broadcast message opcode %v, to %v, data %v", opCode, presences, string(dataByte))
 	if err != nil {
-		logger.Error("Error BroadcastMessage, message: %s", string(dataBin))
+		logger.Error("Error BroadcastMessage, message: %s", string(dataByte))
 		return err
 	}
 	return nil
 }
 
 func (m *processor) NotifyUpdateGameState(s *entity.MatchState, logger runtime.Logger, dispatcher runtime.MatchDispatcher, updateState proto.Message) {
+	logger.Info("notify update game state %v", updateState)
 	m.broadcastMessage(
 		logger, dispatcher,
 		int64(pb.OpCodeUpdate_OPCODE_UPDATE_GAME_STATE),
@@ -498,7 +610,7 @@ func (m *processor) notifyUpdateTable(ctx context.Context, logger runtime.Logger
 	}
 
 	msg := &pb.UpdateTable{
-		Bet:            int64(s.Label.Bet),
+		Bet:            int64(s.Label.Bet.GetMarkUnit()),
 		JoinPlayers:    pjoins,
 		LeavePlayers:   pleaves,
 		Players:        players,
@@ -567,6 +679,11 @@ func (m *processor) ProcessPresencesJoin(ctx context.Context,
 		playingMatchJson, _ := json.Marshal(playingMatch)
 		cgbdb.UpdateUsersPlayingInMatch(ctx, logger, db, listUserId, string(playingMatchJson))
 	}
+
+	for _, presence := range newJoins {
+		m.emitNkEvent(ctx, define.NakEventMatchJoin, nk, presence.GetUserId(), s)
+	}
+
 	m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, presences, nil)
 	//send cards for player rejoin
 	for _, presence := range presences {
@@ -575,17 +692,17 @@ func (m *processor) ProcessPresencesJoin(ctx context.Context,
 			if card == nil {
 				continue
 			}
-			buf, _ := m.marshaler.Marshal(&pb.UpdateDeal{
+			dealMsg := &pb.UpdateDeal{
 				PresenceCard: &pb.PresenceCards{
 					Presence: presence.GetUserId(),
 					Cards:    card.Cards,
 				},
 				TopCard: s.TopCard,
-			})
-
-			_ = dispatcher.BroadcastMessage(int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL),
-				buf, []runtime.Presence{presence.(runtime.Presence)}, nil, true)
-
+			}
+			m.broadcastMessage(
+				logger, dispatcher,
+				int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL), dealMsg,
+				[]runtime.Presence{presence}, nil, true)
 		}
 	}
 	// send update wallet for new user join
@@ -617,6 +734,7 @@ func (m *processor) ProcessPresencesLeave(ctx context.Context, logger runtime.Lo
 	var listUserId []string
 	for _, p := range presences {
 		listUserId = append(listUserId, p.GetUserId())
+		m.emitNkEvent(ctx, define.NakEventMatchLeave, nk, p.GetUserId(), s)
 	}
 	cgbdb.UpdateUsersPlayingInMatch(ctx, logger, db, listUserId, "")
 	m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, nil, presences)
@@ -632,6 +750,7 @@ func (m *processor) ProcessPresencesLeavePending(ctx context.Context, logger run
 			s.RemovePresence(presence)
 			m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, nil, []runtime.Presence{presence})
 		}
+		m.emitNkEvent(ctx, define.NakEventMatchLeave, nk, presence.GetUserId(), s)
 	}
 }
 
@@ -643,22 +762,7 @@ func (m *processor) ProcessApplyPresencesLeave(ctx context.Context,
 	s *entity.MatchState,
 ) {
 	pendingLeaves := s.GetLeavePresences()
-	defer func() {
-		players := entity.NewListPlayer(s.GetPresences())
-		// players.ReadWallet(ctx, nk, logger)
 
-		playing_players := entity.NewListPlayer(s.GetPlayingPresences())
-		// playing_players.ReadWallet(ctx, nk, logger)
-
-		msg := &pb.UpdateTable{
-			Bet:            int64(s.Label.Bet),
-			Players:        players,
-			PlayingPlayers: playing_players,
-			JpTreasure:     s.GetJackpotTreasure(),
-		}
-
-		m.NotifyUpdateTable(s, logger, dispatcher, msg)
-	}()
 	if len(pendingLeaves) == 0 {
 		return
 	}
@@ -679,6 +783,33 @@ func (m *processor) ProcessApplyPresencesLeave(ctx context.Context,
 			nil, pendingLeaves, nil, true)
 	}
 	s.ApplyLeavePresence()
+
+	players := entity.NewListPlayer(s.GetPresences())
+	// players.ReadWallet(ctx, nk, logger)
+
+	playing_players := entity.NewListPlayer(s.GetPlayingPresences())
+	// playing_players.ReadWallet(ctx, nk, logger)
+
+	msg := &pb.UpdateTable{
+		Bet:            int64(s.Label.Bet.GetMarkUnit()),
+		Players:        players,
+		PlayingPlayers: playing_players,
+		JpTreasure:     s.GetJackpotTreasure(),
+	}
+
+	m.NotifyUpdateTable(s, logger, dispatcher, msg)
+}
+
+func (m *processor) ProcessMatchTerminate(ctx context.Context,
+	logger runtime.Logger,
+	nk runtime.NakamaModule,
+	db *sql.DB,
+	dispatcher runtime.MatchDispatcher,
+	s *entity.MatchState,
+) {
+	for _, presence := range s.GetPresences() {
+		m.emitNkEvent(ctx, define.NakEventMatchEnd, nk, presence.GetUserId(), s)
+	}
 }
 
 // check win jackpot, and always get jackpot treasure before exit
@@ -731,7 +862,7 @@ func (m *processor) handlerJackpotProcess(
 	// Công thức tính tiền max khi JP: JP = MCB x 100 x hệ số Vip
 	bet := s.Label.Bet
 	vipLv := entity.MaxInt64(myPrecense.VipLevel, 1)
-	maxJP := int64(bet) * 100 * vipLv
+	maxJP := int64(bet.GetMarkUnit()) * 100 * vipLv
 	maxJP = entity.MinInt64(maxJP, jackpotTreasure.Chips)
 	err = cgbdb.AddOrUpdateChipJackpot(ctx, logger, db, entity.ModuleName, -maxJP)
 	if err != nil {
@@ -766,4 +897,19 @@ func (m *processor) readJackpotTreasure(
 			Chips:    jpTreasure.Chips,
 		}
 	}
+}
+
+func (m *processor) emitNkEvent(ctx context.Context, eventNk define.NakEvent, nk runtime.NakamaModule, userId string, s *entity.MatchState) {
+	matchId, _ := ctx.Value(runtime.RUNTIME_CTX_MATCH_ID).(string)
+	nk.Event(ctx, &api.Event{
+		Name:      string(eventNk),
+		Timestamp: timestamppb.Now(),
+		Properties: map[string]string{
+			"user_id":        userId,
+			"game_code":      entity.ModuleName,
+			"end_match_unix": strconv.FormatInt(time.Now().Unix(), 10),
+			"match_id":       matchId,
+			"mcb":            strconv.FormatInt(int64(s.Label.Bet.GetMarkUnit()), 10),
+		},
+	})
 }

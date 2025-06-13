@@ -22,15 +22,15 @@ func TestNewGameAndDeal(t *testing.T) {
 	state := &entity.MatchState{
 		Presences:        presences,
 		PlayingPresences: presences,
-		Label: &entity.MatchLabel{
-			Open:         1,
-			Bet:          100,
-			Code:         "test",
-			Name:         "test game",
-			Password:     "",
-			MaxSize:      4,
-			MockCodeCard: 0, // Không dùng mock card
-		},
+		// Label: &entity.MatchLabel{
+		// 	Open:         1,
+		// 	Bet:          100,
+		// 	Code:         "test",
+		// 	Name:         "test game",
+		// 	Password:     "",
+		// 	MaxSize:      4,
+		// 	MockCodeCard: 0, // Không dùng mock card
+		// },
 		DealerId: "user1", // Giả sử user1 là người chia bài
 	}
 	// Khởi tạo game mới

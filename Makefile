@@ -1,7 +1,7 @@
 PROJECT_NAME=github.com/nakamaFramework/whot-module
 APP_NAME=whot_plugin.so
 APP_PATH=$(PWD)
-NAKAMA_VER=3.19.0
+NAKAMA_VER=3.27.0
 
 update-submodule-dev:
 	go get github.com/nakamaFramework/cgp-common@develop

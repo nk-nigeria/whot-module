@@ -7,6 +7,7 @@ import (
 
 	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/heroiclabs/nakama-common/runtime"
+	pb1 "github.com/nakama-nigeria/cgp-common/proto"
 	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
 )
 
@@ -15,19 +16,19 @@ const (
 	MaxPresences = 4
 )
 
-type MatchLabel struct {
-	Open         int32  `json:"open"`
-	Bet          int32  `json:"bet"`
-	Code         string `json:"code"`
-	Name         string `json:"name"`
-	Password     string `json:"password"`
-	MaxSize      int32  `json:"max_size"`
-	MockCodeCard int32  `json:"mock_code_card"`
-}
+// type MatchLabel struct {
+// 	Open         int32  `json:"open"`
+// 	Bet          int32  `json:"bet"`
+// 	Code         string `json:"code"`
+// 	Name         string `json:"name"`
+// 	Password     string `json:"password"`
+// 	MaxSize      int32  `json:"max_size"`
+// 	MockCodeCard int32  `json:"mock_code_card"`
+// }
 
 type MatchState struct {
 	Random       *rand.Rand
-	Label        *MatchLabel
+	Label        *pb1.Match
 	MinPresences int
 
 	// Currently connected users, or reserved spaces.
@@ -56,7 +57,16 @@ type MatchState struct {
 	TopCard *pb.Card
 	// Mark assignments to player user IDs.
 	Cards map[string]*pb.ListCard
+	// Delay for the first turn.
+	TurnReadyAt float64
 
+	//time turn play
+	TimeTurn     int
+	TurnExpireAt int64
+
+	AutoPlayCounts     map[string]int   // Đếm số lượt đánh hộ liên tiếp cho mỗi người chơi
+	LastInteractions   map[string]int64 // Thời điểm tương tác cuối cùng của mỗi người chơi
+	IsEndingGame       bool
 	CountDownReachTime time.Time
 	LastCountDown      int
 	GameState          pb.GameState
@@ -66,7 +76,7 @@ type MatchState struct {
 	jackpotTreasure *pb.Jackpot
 }
 
-func NewMatchState(label *MatchLabel) MatchState {
+func NewMatchState(label *pb1.Match) MatchState {
 	m := MatchState{
 		Random:              rand.New(rand.NewSource(time.Now().UnixNano())),
 		Label:               label,
@@ -75,6 +85,7 @@ func NewMatchState(label *MatchLabel) MatchState {
 		PlayingPresences:    linkedhashmap.New(),
 		LeavePresences:      linkedhashmap.New(),
 		PresencesNoInteract: make(map[string]int, 0),
+		TimeTurn:            10,
 		// balanceResult:       nil,
 	}
 	return m
