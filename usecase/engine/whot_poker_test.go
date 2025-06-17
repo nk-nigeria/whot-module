@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/emirpasic/gods/maps/linkedhashmap"
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
-	"github.com/nakama-nigeria/whot-module/entity"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	"github.com/nk-nigeria/whot-module/entity"
 	"github.com/stretchr/testify/assert"
 )
 

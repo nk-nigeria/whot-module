@@ -1,6 +1,6 @@
 package constant
 
-const GameCode = "chinese-poker"
+const GameCode = "whot-game"
 
 const NastEndpoint = "nats://nats:Admin123@103.226.250.195:4222"
 

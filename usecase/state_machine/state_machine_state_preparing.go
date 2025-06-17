@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
-	log "github.com/nakama-nigeria/whot-module/pkg/log"
-	"github.com/nakama-nigeria/whot-module/pkg/packager"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	log "github.com/nk-nigeria/whot-module/pkg/log"
+	"github.com/nk-nigeria/whot-module/pkg/packager"
 )
 
 type StatePreparing struct {

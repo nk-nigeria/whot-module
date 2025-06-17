@@ -2,12 +2,14 @@ package engine
 
 import (
 	"errors"
+	"fmt"
 	"math"
+	"math/rand"
 
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
-	"github.com/nakama-nigeria/whot-module/entity"
-	mockcodegame "github.com/nakama-nigeria/whot-module/mock_code_game"
-	"github.com/nakama-nigeria/whot-module/pkg/log"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	"github.com/nk-nigeria/whot-module/entity"
+	mockcodegame "github.com/nk-nigeria/whot-module/mock_code_game"
+	"github.com/nk-nigeria/whot-module/pkg/log"
 )
 
 type Engine struct {
@@ -33,7 +35,7 @@ func (e *Engine) NewGame(s *entity.MatchState) error {
 func (e *Engine) Deal(s *entity.MatchState) error {
 	e.deck = entity.NewDeck()
 	e.deck.Shuffle()
-	mockcodegame.InitMapMockCodeListCard(log.GetLogger())
+	// mockcodegame.InitMapMockCodeListCard(log.GetLogger())
 	if list, exist := mockcodegame.MapMockCodeListCard[int(s.Label.MockCodeCard)]; exist {
 		if len(list) >= s.PlayingPresences.Size() {
 			log.GetLogger().Debug("[MockCard] Match has label mock code card %d " +
@@ -49,6 +51,11 @@ func (e *Engine) Deal(s *entity.MatchState) error {
 			log.GetLogger().Debug("[MockCard] Match has label mock code card %d "+
 				"but list card in mock smaller than size playert join game, fallback to normal", s.Label.MockCodeCard)
 		}
+	}
+
+	card, err := e.deck.Deal(1, true)
+	if err != nil {
+		return err
 	}
 
 	CountCard := 0
@@ -67,17 +74,14 @@ func (e *Engine) Deal(s *entity.MatchState) error {
 	// loop on userid in match
 	for _, k := range s.PlayingPresences.Keys() {
 		userId := k.(string)
-		cards, err := e.deck.Deal(CountCard)
+		cards, err := e.deck.Deal(CountCard, false)
 		if err == nil {
 			s.Cards[userId] = cards
 		} else {
 			return err
 		}
 	}
-	card, err := e.deck.Deal(1)
-	if err != nil {
-		return err
-	}
+
 	if len(card.Cards) > 0 {
 		s.TopCard = card.Cards[0]
 	} else {
@@ -115,44 +119,53 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 		log.GetLogger().Error("card not in player's hand")
 		return entity.EffectNone, errors.New("card not in player's hand")
 	}
-
+	log.GetLogger().Debug("card played: %v on top %v", card, s.TopCard)
+	fmt.Printf("Card played: %v on top %v\n", card, s.TopCard)
 	playedEntityCard := entity.NewCardFromPb(card.GetRank(), card.GetSuit())
 	topEntityCard := entity.NewCardFromPb(s.TopCard.GetRank(), s.TopCard.GetSuit())
-
+	log.GetLogger().Debug("convert played card: %v on top card: %v", playedEntityCard, topEntityCard)
+	fmt.Printf("Convert played card: %v on top card: %v\n", playedEntityCard, topEntityCard)
 	if !e.IsValidPlay(playedEntityCard, topEntityCard) {
 		log.GetLogger().Error("invalid card played: %v on top %v", card, s.TopCard)
 		return entity.EffectNone, errors.New("invalid card played")
 	}
 
 	effect := entity.EffectNone
-
+	fmt.Printf("Card getRank : %v\n", card.GetRank())
+	fmt.Printf("entity : %v\n", entity.CardValueGeneralMarket)
+	fmt.Printf("bool : %v\n", entity.CardValueGeneralMarket == card.GetRank())
 	switch card.GetRank() {
-	case entity.CardValueHoldOn: // 1
+	case pb.CardRank_RANK_1: // 1
 		effect = entity.EffectHoldOn
 		s.IsHoldOn = true
 
-	case entity.CardValuePickTwo: // 2
+	case pb.CardRank_RANK_2: // 2
 		effect = entity.EffectPickTwo
 		s.PickPenalty += 2
 		s.EffectTarget = s.GetNextPlayerClockwise(userId)
 		s.CurrentTurn = s.EffectTarget
 
-	case entity.CardValuePickThree: // 5
+	case pb.CardRank_RANK_5: // 5
 		effect = entity.EffectPickThree
+		fmt.Printf("Pick Three card played by %s\n", userId)
 		s.PickPenalty += 3
 		s.EffectTarget = s.GetNextPlayerClockwise(userId)
 		s.CurrentTurn = s.EffectTarget
 
-	case entity.CardValueSuspension: // 8
+	case pb.CardRank_RANK_8: // 8
 		effect = entity.EffectSuspension
+		fmt.Printf("Suspension card played by %s\n", userId)
 		s.IsSuspension = true
 		nextPlayer := s.GetNextPlayerClockwise(userId)
 		s.CurrentTurn = s.GetNextPlayerClockwise(nextPlayer)
 
-	case entity.CardValueGeneralMarket: // 14
+	case pb.CardRank_RANK_14: // 14
+		log.GetLogger().Info("General Market card played by %s", userId)
+		fmt.Printf("General Market card played by %s\n", userId)
 		effect = entity.EffectGeneralMarket
 
-	case entity.CardValueWhot: // 20
+	case pb.CardRank_RANK_20: // 20
+		fmt.Printf("Whot card played by %s\n", userId)
 		effect = entity.EffectWhot
 		s.WaitingForWhotShape = true
 	default:
@@ -186,7 +199,7 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 
 func (e *Engine) DrawCardsFromDeck(s *entity.MatchState, userID string) (int, error) {
 	// Kiểm tra lượt chơi
-	if s.CurrentTurn != userID {
+	if s.CurrentTurn != userID && s.CurrentEffect != entity.EffectGeneralMarket {
 		return 0, errors.New("not user's turn")
 	}
 
@@ -202,7 +215,7 @@ func (e *Engine) DrawCardsFromDeck(s *entity.MatchState, userID string) (int, er
 	}
 
 	// Rút bài từ bộ bài
-	card, err := e.deck.Deal(cardsToDraw)
+	card, err := e.deck.Deal(cardsToDraw, false)
 	if err != nil {
 		return 0, err
 	}
@@ -212,10 +225,13 @@ func (e *Engine) DrawCardsFromDeck(s *entity.MatchState, userID string) (int, er
 	if s.AutoPlayCounts == nil {
 		s.AutoPlayCounts = make(map[string]int)
 	}
-	s.AutoPlayCounts[userID] = 0
+
+	if s.CurrentEffect != entity.EffectGeneralMarket {
+		s.AutoPlayCounts[userID] = 0
+	}
 
 	// Xác định người chơi tiếp theo
-	if !drawingPenalty {
+	if !drawingPenalty && s.CurrentEffect != entity.EffectGeneralMarket {
 		s.CurrentTurn = s.GetNextPlayerClockwise(userID)
 	}
 
@@ -254,7 +270,7 @@ func (e *Engine) ChooseWhotShape(s *entity.MatchState, userID string, shape pb.C
 	// Cập nhật hình được chọn
 	s.TopCard.Suit = shape
 	s.WaitingForWhotShape = false
-
+	s.CurrentTurn = s.GetNextPlayerClockwise(userID)
 	return nil
 }
 
@@ -399,4 +415,21 @@ func (e *Engine) IsValidPlay(playedCard, topCard entity.Card) bool {
 		return true
 	}
 	return false
+}
+
+func (e *Engine) ChooseAutomaticWhotShape() *pb.Card {
+	// Phương án 1: Chọn shape ngẫu nhiên
+	shapes := []pb.CardSuit{
+		pb.CardSuit_SUIT_CIRCLE,
+		pb.CardSuit_SUIT_SQUARE,
+		pb.CardSuit_SUIT_TRIANGLE,
+		pb.CardSuit_SUIT_STAR,
+		pb.CardSuit_SUIT_CROSS,
+	}
+	randomIndex := rand.Intn(len(shapes))
+
+	return &pb.Card{
+		Rank: pb.CardRank_RANK_20,
+		Suit: shapes[randomIndex],
+	}
 }

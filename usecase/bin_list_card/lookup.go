@@ -2,7 +2,7 @@ package bin_list_card
 
 import (
 	"github.com/bits-and-blooms/bitset"
-	"github.com/nakama-nigeria/whot-module/entity"
+	"github.com/nk-nigeria/whot-module/entity"
 )
 
 func createResult(size uint, sets ...*bitset.BitSet) entity.ListCard {
@@ -86,9 +86,9 @@ func (s service) lookupFullHouse(b *entity.BinListCard) (uint, entity.ListCard) 
 }
 
 func isNextStraight(c1, c2 entity.Card) bool {
-	if c2.GetRank()-c1.GetRank() == entity.RankStep {
-		return true
-	}
+	// if c2.GetRank()-c1.GetRank() == entity.RankStep {
+	// 	return true
+	// }
 
 	if c2.GetRank() == entity.Ranks[0] && c1.GetRank() == entity.Ranks[5] {
 		return true

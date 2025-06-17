@@ -1,6 +1,6 @@
-module github.com/nakama-nigeria/whot-module
+module github.com/nk-nigeria/whot-module
 
-replace github.com/nakama-nigeria/cgp-common => ./cgp-common
+replace github.com/nk-nigeria/cgp-common => ./cgp-common
 
 go 1.24.3
 
@@ -11,8 +11,8 @@ require (
 	github.com/heroiclabs/nakama-common v1.37.0
 	github.com/jackc/pgtype v1.14.0
 	github.com/lib/pq v1.10.9
-	github.com/nakama-nigeria/cgp-common v0.0.0-20250530040945-51a679c17fa2
 	github.com/nats-io/nats.go v1.16.0
+	github.com/nk-nigeria/cgp-common v0.0.0-20250530040945-51a679c17fa2
 	github.com/qmuntal/stateless v1.6.8
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0

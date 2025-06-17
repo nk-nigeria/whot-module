@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	"github.com/nakama-nigeria/whot-module/entity"
+	"github.com/nk-nigeria/whot-module/entity"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

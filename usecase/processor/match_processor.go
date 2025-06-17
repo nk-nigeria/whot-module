@@ -10,14 +10,14 @@ import (
 
 	"github.com/heroiclabs/nakama-common/api"
 	"github.com/heroiclabs/nakama-common/runtime"
-	"github.com/nakama-nigeria/cgp-common/define"
-	pb1 "github.com/nakama-nigeria/cgp-common/proto"
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
-	"github.com/nakama-nigeria/whot-module/cgbdb"
-	"github.com/nakama-nigeria/whot-module/constant"
-	"github.com/nakama-nigeria/whot-module/entity"
-	"github.com/nakama-nigeria/whot-module/message_queue"
-	"github.com/nakama-nigeria/whot-module/usecase/engine"
+	"github.com/nk-nigeria/cgp-common/define"
+	pb1 "github.com/nk-nigeria/cgp-common/proto"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	"github.com/nk-nigeria/whot-module/cgbdb"
+	"github.com/nk-nigeria/whot-module/constant"
+	"github.com/nk-nigeria/whot-module/entity"
+	"github.com/nk-nigeria/whot-module/message_queue"
+	"github.com/nk-nigeria/whot-module/usecase/engine"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -80,15 +80,32 @@ func (m *processor) UpdateTurn(logger runtime.Logger, dispatcher runtime.MatchDi
 }
 
 func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
-	userID := message.GetUserId()
+
+	var userID string
 	payload := &pb.Card{}
-	m.unmarshaler.Unmarshal(message.GetData(), payload)
+
+	if message == nil {
+		userID = s.CurrentTurn
+		payload = m.engine.FindPlayableCard(s, userID)
+		logger.Info("Auto-playing card for user %s: %s", userID, payload.String())
+		if payload == nil {
+			m.DrawCard(logger, dispatcher, s, nil)
+			return
+		}
+	} else {
+		userID = message.GetUserId()
+		m.unmarshaler.Unmarshal(message.GetData(), payload)
+		logger.Info("User %s played card: %s", userID, payload.String())
+	}
+
 	// 1. Gọi engine xử lý đánh bài: cập nhật game state, top card, v.v...
 	effect, err := m.engine.PlayCard(s, userID, payload)
 	if err != nil {
 		logger.Error("engine.Play error for user %s: %v", userID, err)
 		return
 	}
+
+	logger.Info("User %s played card %s with effect %s", userID, payload.String(), effect)
 
 	// Tạo thông báo cập nhật trạng thái
 	cardStateMsg := &pb.UpdateCardState{
@@ -98,6 +115,7 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 		Effect:       pb.CardEffect(effect), // Convert từ entity.CardEffect sang pb.CardEffect
 		PickPenalty:  int32(s.PickPenalty),
 		TargetUserId: s.EffectTarget,
+		IsAutoPlay:   message == nil,
 	}
 
 	m.broadcastMessage(
@@ -109,6 +127,7 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 	// Xử lý đặc biệt với General Market
 	if effect == entity.EffectGeneralMarket {
 		// Gọi engine xử lý General Market
+		logger.Info("Handling General Market for user %s", userID)
 		if err := m.engine.HandleGeneralMarket(s, userID); err != nil {
 			logger.Error("Failed to handle General Market: %v", err)
 			return
@@ -135,11 +154,10 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 
 					// Thông báo công khai rằng người này đã rút bài
 					drawMsg := &pb.UpdateCardState{
-						UserId:      otherUserId,
-						Event:       pb.CardEvent_DRAW,
-						TopCard:     s.TopCard,
-						Effect:      pb.CardEffect_EFFECT_NONE,
-						PickPenalty: 1,
+						UserId:  otherUserId,
+						Event:   pb.CardEvent_DRAW,
+						TopCard: s.TopCard,
+						Effect:  pb.CardEffect_GENERAL_MARKET,
 					}
 
 					m.broadcastMessage(
@@ -169,34 +187,26 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 }
 
 func (m *processor) ChooseWhotShape(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
-	userID := message.GetUserId()
 
-	// Kiểm tra xem có đang chờ chọn hình không
-	if !s.WaitingForWhotShape {
-		logger.Error("Not waiting for Whot shape choice from %s", userID)
-		return
-	}
-
-	// Kiểm tra lượt chơi
-	if s.CurrentTurn != userID {
-		logger.Error("Not user's turn to choose Whot shape: %s", userID)
-		return
-	}
-
-	// Giải mã lựa chọn
+	var userID string
 	var payload pb.Card
-	m.unmarshaler.Unmarshal(message.GetData(), &payload)
 
-	// Cập nhật hình được chọn
-	// s.CurrentShape = entity.WhotCardShape(payload)
-	s.WaitingForWhotShape = false
-	s.TopCard.Suit = payload.Suit
-	// Thông báo hình mới được chọn
+	if message == nil {
+		userID = s.CurrentTurn
+		payload = *m.engine.ChooseAutomaticWhotShape()
+	} else {
+		userID = message.GetUserId()
+		m.unmarshaler.Unmarshal(message.GetData(), &payload)
+	}
+
+	m.engine.ChooseWhotShape(s, userID, payload.Suit)
+
 	updateMsg := &pb.UpdateCardState{
-		UserId:  userID,
-		Event:   pb.CardEvent_PLAY,
-		Effect:  pb.CardEffect_CHOICE_SHAPE_GHOST,
-		TopCard: s.TopCard, // Cập nhật suit cho top card nếu cần
+		UserId:     userID,
+		Event:      pb.CardEvent_PLAY,
+		Effect:     pb.CardEffect_CHOICE_SHAPE_GHOST,
+		TopCard:    s.TopCard,
+		IsAutoPlay: message == nil,
 	}
 
 	m.broadcastMessage(
@@ -204,14 +214,16 @@ func (m *processor) ChooseWhotShape(logger runtime.Logger, dispatcher runtime.Ma
 		int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
 		updateMsg, nil, nil, true,
 	)
-
-	// Chuyển lượt cho người chơi tiếp theo
-	s.CurrentTurn = s.GetNextPlayerClockwise(userID)
 	m.UpdateTurn(logger, dispatcher, s)
 }
 
 func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
-	userID := message.GetUserId()
+	var userID string
+	if message == nil {
+		userID = s.CurrentTurn
+	} else {
+		userID = message.GetUserId()
+	}
 
 	// Gọi engine xử lý rút bài
 	cardsToDraw, err := m.engine.DrawCardsFromDeck(s, userID)
@@ -240,6 +252,7 @@ func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 		Event:       pb.CardEvent_DRAW,
 		TopCard:     s.TopCard,
 		PickPenalty: int32(cardsToDraw),
+		IsAutoPlay:  message == nil,
 	}
 
 	m.broadcastMessage(
@@ -266,121 +279,17 @@ func (m *processor) CheckAndHandleTurnTimeout(ctx context.Context, logger runtim
 	}
 	s.AutoPlayCounts[userID]++
 
-	// Thông báo cho tất cả người chơi rằng server đang đánh hộ
-	// autoPlayMsg := &pb.UpdateCardState{
-	// 	UserId:  userID,
-	// 	Event:   pb.CardEvent_AUTO_PLAY, // Cần thêm AUTO_PLAY vào CardEvent enum
-	// 	TopCard: s.TopCard,
-	// }
-
-	// m.broadcastMessage(
-	// 	logger, dispatcher,
-	// 	int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
-	// 	autoPlayMsg, nil, nil, true,
-	// )
-
-	// Thực hiện đánh hộ - thử tìm bài phù hợp để đánh
-	userCards := s.Cards[userID]
-	if userCards != nil && len(userCards.Cards) > 0 {
-		// Tìm bài phù hợp để đánh
-		playableCard := m.engine.FindPlayableCard(s, userID)
-
-		if playableCard != nil {
-			// Nếu có bài phù hợp, đánh bài đó
-			effect, err := m.engine.PlayCard(s, userID, playableCard)
-			if err == nil {
-				// Thông báo đánh bài thành công
-				cardStateMsg := &pb.UpdateCardState{
-					UserId:       userID,
-					Event:        pb.CardEvent_PLAY,
-					TopCard:      s.TopCard,
-					Effect:       pb.CardEffect(effect),
-					PickPenalty:  int32(s.PickPenalty),
-					TargetUserId: s.EffectTarget,
-					IsAutoPlay:   true,
-				}
-
-				m.broadcastMessage(
-					logger, dispatcher,
-					int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
-					cardStateMsg, nil, nil, true,
-				)
-
-				// Xử lý đặc biệt General Market nếu cần
-				if effect == entity.EffectGeneralMarket {
-					// Xử lý General Market tương tự như trong hàm PlayCard
-					// ...
-				}
-
-				// Nếu đánh lá Whot, tự chọn một hình mặc định
-				if s.WaitingForWhotShape {
-					s.WaitingForWhotShape = false
-					// s.TopCard.Suit = pb.CardSuit_SUIT_CIRCLE // Mặc định chọn CIRCLE
-
-					whotChoiceMsg := &pb.UpdateCardState{
-						UserId:     userID,
-						Event:      pb.CardEvent_PLAY,
-						Effect:     pb.CardEffect_CHOICE_SHAPE_GHOST,
-						TopCard:    s.TopCard,
-						IsAutoPlay: true,
-					}
-
-					m.broadcastMessage(
-						logger, dispatcher,
-						int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
-						whotChoiceMsg, nil, nil, true,
-					)
-				}
-
-				// Cập nhật lượt tiếp theo nếu không chờ chọn hình Whot
-				if !s.WaitingForWhotShape {
-					s.CurrentTurn = s.GetNextPlayerClockwise(userID)
-					m.UpdateTurn(logger, dispatcher, s)
-				}
-
-				return true
-			}
+	if s.WaitingForWhotShape {
+		m.ChooseWhotShape(logger, dispatcher, s, nil)
+		return true
+	} else {
+		// Thực hiện đánh hộ - thử tìm bài phù hợp để đánh
+		userCards := s.Cards[userID]
+		if userCards != nil && len(userCards.Cards) > 0 {
+			m.PlayCard(logger, dispatcher, s, nil)
+			return true
 		}
 	}
-
-	// Nếu không tìm được bài phù hợp hoặc có lỗi khi đánh bài, rút bài
-	cardsToDraw, err := m.engine.DrawCardsFromDeck(s, userID)
-	if err != nil {
-		logger.Error("Error auto drawing card: %v", err)
-	}
-
-	// Thông báo cho người chơi về bài mới
-	playerPresence, found := s.PlayingPresences.Get(userID)
-	if found {
-		dealMsg := &pb.UpdateDeal{
-			PresenceCard: &pb.PresenceCards{
-				Presence: userID,
-				Cards:    s.Cards[userID].Cards,
-			},
-		}
-		m.broadcastMessage(logger, dispatcher,
-			int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL), dealMsg,
-			[]runtime.Presence{playerPresence.(runtime.Presence)}, nil, true)
-	}
-
-	// Thông báo công khai về việc rút bài
-	drawMsg := &pb.UpdateCardState{
-		UserId:      userID,
-		Event:       pb.CardEvent_DRAW,
-		TopCard:     s.TopCard,
-		PickPenalty: int32(cardsToDraw),
-		IsAutoPlay:  true,
-	}
-
-	m.broadcastMessage(
-		logger, dispatcher,
-		int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
-		drawMsg, nil, nil, true,
-	)
-
-	// Chuyển lượt cho người tiếp theo
-	s.CurrentTurn = s.GetNextPlayerClockwise(userID)
-	m.UpdateTurn(logger, dispatcher, s)
 
 	return true
 }

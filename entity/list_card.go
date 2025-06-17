@@ -1,6 +1,6 @@
 package entity
 
-import pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+import pb "github.com/nk-nigeria/cgp-common/proto/whot"
 
 type ListCard []Card
 

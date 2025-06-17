@@ -7,8 +7,8 @@ import (
 
 	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/heroiclabs/nakama-common/runtime"
-	pb1 "github.com/nakama-nigeria/cgp-common/proto"
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	pb1 "github.com/nk-nigeria/cgp-common/proto"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 )
 
 const (

@@ -7,7 +7,7 @@ import (
 
 	"github.com/heroiclabs/nakama-common/runtime"
 	_ "github.com/lib/pq"
-	"github.com/nakama-nigeria/whot-module/entity"
+	"github.com/nk-nigeria/whot-module/entity"
 )
 
 func TestAddNewFeeGame(t *testing.T) {

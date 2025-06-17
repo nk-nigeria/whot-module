@@ -21,15 +21,15 @@ import (
 	"fmt"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	pb1 "github.com/nakama-nigeria/cgp-common/proto"
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
-	"github.com/nakama-nigeria/whot-module/api/presenter"
-	"github.com/nakama-nigeria/whot-module/cgbdb"
-	"github.com/nakama-nigeria/whot-module/entity"
-	"github.com/nakama-nigeria/whot-module/pkg/packager"
-	"github.com/nakama-nigeria/whot-module/usecase/engine"
-	"github.com/nakama-nigeria/whot-module/usecase/processor"
-	gsm "github.com/nakama-nigeria/whot-module/usecase/state_machine"
+	pb1 "github.com/nk-nigeria/cgp-common/proto"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	"github.com/nk-nigeria/whot-module/api/presenter"
+	"github.com/nk-nigeria/whot-module/cgbdb"
+	"github.com/nk-nigeria/whot-module/entity"
+	"github.com/nk-nigeria/whot-module/pkg/packager"
+	"github.com/nk-nigeria/whot-module/usecase/engine"
+	"github.com/nk-nigeria/whot-module/usecase/processor"
+	gsm "github.com/nk-nigeria/whot-module/usecase/state_machine"
 	"github.com/qmuntal/stateless"
 	"google.golang.org/protobuf/proto"
 )
@@ -81,6 +81,7 @@ func (m *MatchHandler) MatchInit(ctx context.Context, logger runtime.Logger, db 
 
 	matchInfo.Name = entity.ModuleName
 	matchInfo.MaxSize = entity.MaxPresences
+	matchInfo.MockCodeCard = 0
 	matchJson, err := json.Marshal(matchInfo)
 	if err != nil {
 		logger.Error("match init json label failed ", err)

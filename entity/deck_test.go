@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -67,7 +67,7 @@ func TestDeal(t *testing.T) {
 	cardsPerPlayer := 4
 
 	for i := 0; i < players; i++ {
-		cards, err := deck.Deal(cardsPerPlayer)
+		cards, err := deck.Deal(cardsPerPlayer, false)
 		if err != nil {
 			t.Fatalf("❌ deal for player %d error: %v", i+1, err)
 		}

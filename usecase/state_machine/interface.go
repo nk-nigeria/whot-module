@@ -3,7 +3,7 @@ package state_machine
 import (
 	"context"
 
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 	"github.com/qmuntal/stateless"
 )
 

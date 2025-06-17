@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math/rand"
 
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 )
 
 const MaxCard = 54
@@ -79,11 +79,24 @@ func (d *Deck) Shuffle() {
 }
 
 // Deal a specified amount of Cards
-func (d *Deck) Deal(n int) (*pb.ListCard, error) {
+func (d *Deck) Deal(n int, isTopCard bool) (*pb.ListCard, error) {
 	if (MaxCard - d.Dealt) < n {
 		return nil, errors.New("deck.deal.error-not-enough")
 	}
 
+	if isTopCard {
+		retryLimit := 10
+		for retry := 0; retry < retryLimit; retry++ {
+			if d.Cards.Cards[d.Dealt].Rank != pb.CardRank_RANK_20 {
+				break
+			}
+			Shuffle(d.Cards)
+		}
+
+		if d.Cards.Cards[d.Dealt].Rank == pb.CardRank_RANK_20 {
+			return nil, errors.New("deal.topcard.error-whot-retry-limit")
+		}
+	}
 	var cards pb.ListCard
 	for i := 0; i < n; i++ {
 		cards.Cards = append(cards.Cards, d.Cards.Cards[d.Dealt])
@@ -91,18 +104,6 @@ func (d *Deck) Deal(n int) (*pb.ListCard, error) {
 	}
 
 	return &cards, nil
-}
-
-// Deal one card from the deck
-func (d *Deck) DealOne() (*pb.Card, error) {
-	if d.Dealt >= len(d.Cards.Cards) {
-		return nil, errors.New("deck.deal.error-not-enough")
-	}
-
-	card := d.Cards.Cards[d.Dealt]
-	d.Dealt++
-
-	return card, nil
 }
 
 func (d *Deck) RemainingCards() int {

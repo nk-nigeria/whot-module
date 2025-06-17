@@ -3,8 +3,8 @@ package state_machine
 import (
 	"context"
 
-	log "github.com/nakama-nigeria/whot-module/pkg/log"
-	"github.com/nakama-nigeria/whot-module/pkg/packager"
+	log "github.com/nk-nigeria/whot-module/pkg/log"
+	"github.com/nk-nigeria/whot-module/pkg/packager"
 )
 
 type StateReward struct {

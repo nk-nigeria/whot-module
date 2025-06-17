@@ -5,11 +5,11 @@
     "cards": [
       {
         "userId": "1",
-        "card": "5c;7x;13s;2t;2q;8c;8s;8t;8q;4q;7x;11c;20w"
+        "card": "5c;7x;13s;2t;2q;8c;14s;1t;8q;4q;7x;11c;20w"
       },
       {
         "userId": "2",
-        "card": "1c;1t;13x;4t;4s;8c;2t;7x;7t;10s;10q;13s;11c"
+        "card": "1c;5t;13x;4t;4s;8c;2t;7x;7t;10s;10q;20s;14c"
       },
       {
         "userId": "3",

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	"github.com/nakama-nigeria/whot-module/entity"
+	"github.com/nk-nigeria/whot-module/entity"
 )
 
 const JackpotHisotryTableName = "jackpot_history"

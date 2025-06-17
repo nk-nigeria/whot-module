@@ -3,7 +3,7 @@ package entity
 import (
 	"fmt"
 
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 )
 
 // WHOT sử dụng 5 suit và các số từ 1–14 + WHOT
@@ -11,7 +11,6 @@ import (
 type Card uint8
 
 const (
-	RankStep uint8 = 0x10
 	Rank1    uint8 = 0x10
 	Rank2    uint8 = 0x20
 	Rank3    uint8 = 0x30
@@ -26,7 +25,7 @@ const (
 	Rank12   uint8 = 0xC0
 	Rank13   uint8 = 0xD0
 	Rank14   uint8 = 0xE0
-	RankWHOT uint8 = 0xF0 // Lá đặc biệt, không có chất
+	RankWHOT uint8 = 0xF0
 
 	SuitNone     uint8 = 0x00
 	SuitCircle   uint8 = 0x01
@@ -55,12 +54,12 @@ var Ranks = []uint8{
 }
 
 var Suits = []uint8{
+	SuitNone,
 	SuitCircle,
 	SuitCross,
 	SuitStar,
 	SuitTriangle,
 	SuitSquare,
-	SuitNone,
 }
 
 const (
@@ -148,23 +147,28 @@ const (
 	Card14S = Card(Rank14 | SuitStar)
 	Card14R = Card(Rank14 | SuitSquare)
 
-	CardWHOT = Card(RankWHOT)
+	CardWHOT  = Card(RankWHOT | SuitNone)
+	CardWHOTC = Card(RankWHOT | SuitCircle)
+	CardWHOTX = Card(RankWHOT | SuitCross)
+	CardWHOTS = Card(RankWHOT | SuitStar)
+	CardWHOTT = Card(RankWHOT | SuitTriangle)
+	CardWHOTR = Card(RankWHOT | SuitSquare)
 )
 
 var mapStringRanks = map[uint8]string{
-	0x10: "1", 0x20: "2", 0x30: "3", 0x40: "4",
-	0x50: "5", 0x60: "6", 0x70: "7", 0x80: "8",
-	0x90: "9", 0xA0: "10", 0xB0: "11", 0xC0: "12",
-	0xD0: "13", 0xE0: "14", RankWHOT: "WHOT",
+	Rank1: "1", Rank2: "2", Rank3: "3", Rank4: "4",
+	Rank5: "5", Rank6: "6", Rank7: "7", Rank8: "8",
+	Rank9: "9", Rank10: "10", Rank11: "11", Rank12: "12",
+	Rank13: "13", Rank14: "14", RankWHOT: "WHOT",
 }
 
 var mapStringSuits = map[uint8]string{
+	SuitNone:     "NONE",
 	SuitCircle:   "CIRCLE",
 	SuitCross:    "CROSS",
 	SuitStar:     "STAR",
 	SuitTriangle: "TRIANGLE",
 	SuitSquare:   "SQUARE",
-	SuitNone:     "NONE",
 }
 
 var mapRanks = map[pb.CardRank]uint8{
@@ -180,15 +184,16 @@ var mapRanks = map[pb.CardRank]uint8{
 	pb.CardRank_RANK_12: Ranks[11],
 	pb.CardRank_RANK_13: Ranks[12],
 	pb.CardRank_RANK_14: Ranks[13],
-	pb.CardRank_RANK_20: RankWHOT,
+	pb.CardRank_RANK_20: Ranks[19],
 }
 
 var mapSuits = map[pb.CardSuit]uint8{
-	pb.CardSuit_SUIT_CIRCLE:   SuitCircle,
-	pb.CardSuit_SUIT_CROSS:    SuitCross,
-	pb.CardSuit_SUIT_SQUARE:   SuitSquare,
-	pb.CardSuit_SUIT_STAR:     SuitStar,
-	pb.CardSuit_SUIT_TRIANGLE: SuitTriangle,
+	pb.CardSuit_SUIT_UNSPECIFIED: SuitNone,
+	pb.CardSuit_SUIT_CIRCLE:      SuitCircle,
+	pb.CardSuit_SUIT_CROSS:       SuitCross,
+	pb.CardSuit_SUIT_SQUARE:      SuitSquare,
+	pb.CardSuit_SUIT_STAR:        SuitStar,
+	pb.CardSuit_SUIT_TRIANGLE:    SuitTriangle,
 }
 
 type CardEffect int
@@ -225,9 +230,6 @@ func NewCardFromUint(c uint) Card {
 }
 
 func NewCard(rank uint8, suit uint8) Card {
-	if rank == RankWHOT {
-		return Card(rank)
-	}
 	return Card(rank | suit)
 }
 
@@ -236,9 +238,6 @@ func (c Card) GetRank() uint8 {
 }
 
 func (c Card) GetSuit() uint8 {
-	if c.GetRank() == RankWHOT {
-		return SuitNone
-	}
 	return uint8(c & 0x0F)
 }
 

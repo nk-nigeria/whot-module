@@ -3,8 +3,8 @@ package mock
 import (
 	"testing"
 
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
-	"github.com/nakama-nigeria/whot-module/entity"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	"github.com/nk-nigeria/whot-module/entity"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 

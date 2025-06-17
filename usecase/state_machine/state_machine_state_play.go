@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/nakama-nigeria/cgp-common/proto/whot"
-	log "github.com/nakama-nigeria/whot-module/pkg/log"
-	"github.com/nakama-nigeria/whot-module/pkg/packager"
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	log "github.com/nk-nigeria/whot-module/pkg/log"
+	"github.com/nk-nigeria/whot-module/pkg/packager"
 )
 
 type StatePlay struct {
@@ -70,10 +70,13 @@ func (s *StatePlay) Process(ctx context.Context, args ...interface{}) error {
 		for _, message := range messages {
 			switch pb.OpCodeRequest(message.GetOpCode()) {
 			case pb.OpCodeRequest_OPCODE_REQUEST_PLAY_CARD:
+				logger.Info("User %s play card", message.GetUserId())
 				processor.PlayCard(logger, dispatcher, state, message)
 			case pb.OpCodeRequest_OPCODE_REQUEST_DRAW_CARD:
+				logger.Info("User %s draw card", message.GetUserId())
 				processor.DrawCard(logger, dispatcher, state, message)
 			case pb.OpCodeRequest_OPCODE_REQUEST_CALL_WHOT:
+				logger.Info("User %s call whot", message.GetUserId())
 				processor.ChooseWhotShape(logger, dispatcher, state, message)
 			case pb.OpCodeRequest_OPCODE_USER_INTERACT_CARDS:
 				logger.Info("User %s interact with card", message.GetUserId())
