@@ -16,7 +16,7 @@ type Engine struct {
 	deck *entity.Deck
 }
 
-func NewWhotPokerEngine() UseCase {
+func NewWhotEngine() UseCase {
 	return &Engine{}
 }
 
@@ -24,8 +24,7 @@ func (e *Engine) NewGame(s *entity.MatchState) error {
 	s.Cards = make(map[string]*pb.ListCard)
 	if s.WinnerId != "" {
 		log.GetLogger().Info("Resetting match state for new game")
-		s.PreviousWinnerId = s.WinnerId
-		s.WinnerId = ""
+		s.ResetMatch()
 	}
 	s.SetDealer()
 	s.CurrentTurn = s.DealerId
@@ -119,25 +118,18 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 		log.GetLogger().Error("card not in player's hand")
 		return entity.EffectNone, errors.New("card not in player's hand")
 	}
-	log.GetLogger().Debug("card played: %v on top %v", card, s.TopCard)
-	fmt.Printf("Card played: %v on top %v\n", card, s.TopCard)
+
 	playedEntityCard := entity.NewCardFromPb(card.GetRank(), card.GetSuit())
 	topEntityCard := entity.NewCardFromPb(s.TopCard.GetRank(), s.TopCard.GetSuit())
-	log.GetLogger().Debug("convert played card: %v on top card: %v", playedEntityCard, topEntityCard)
-	fmt.Printf("Convert played card: %v on top card: %v\n", playedEntityCard, topEntityCard)
-	if !e.IsValidPlay(playedEntityCard, topEntityCard) {
-		log.GetLogger().Error("invalid card played: %v on top %v", card, s.TopCard)
+	if !e.isValidPlay(playedEntityCard, topEntityCard) {
 		return entity.EffectNone, errors.New("invalid card played")
 	}
 
 	effect := entity.EffectNone
-	fmt.Printf("Card getRank : %v\n", card.GetRank())
-	fmt.Printf("entity : %v\n", entity.CardValueGeneralMarket)
-	fmt.Printf("bool : %v\n", entity.CardValueGeneralMarket == card.GetRank())
+
 	switch card.GetRank() {
 	case pb.CardRank_RANK_1: // 1
 		effect = entity.EffectHoldOn
-		s.IsHoldOn = true
 
 	case pb.CardRank_RANK_2: // 2
 		effect = entity.EffectPickTwo
@@ -147,21 +139,17 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 
 	case pb.CardRank_RANK_5: // 5
 		effect = entity.EffectPickThree
-		fmt.Printf("Pick Three card played by %s\n", userId)
 		s.PickPenalty += 3
 		s.EffectTarget = s.GetNextPlayerClockwise(userId)
 		s.CurrentTurn = s.EffectTarget
 
 	case pb.CardRank_RANK_8: // 8
 		effect = entity.EffectSuspension
-		fmt.Printf("Suspension card played by %s\n", userId)
-		s.IsSuspension = true
 		nextPlayer := s.GetNextPlayerClockwise(userId)
+		s.EffectTarget = nextPlayer
 		s.CurrentTurn = s.GetNextPlayerClockwise(nextPlayer)
 
 	case pb.CardRank_RANK_14: // 14
-		log.GetLogger().Info("General Market card played by %s", userId)
-		fmt.Printf("General Market card played by %s\n", userId)
 		effect = entity.EffectGeneralMarket
 
 	case pb.CardRank_RANK_20: // 20
@@ -179,19 +167,13 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 	playerCards.Cards = append(playerCards.Cards[:cardIndex], playerCards.Cards[cardIndex+1:]...)
 	s.Cards[userId] = playerCards
 
-	if s.AutoPlayCounts == nil {
-		s.AutoPlayCounts = make(map[string]int)
-	}
-	s.AutoPlayCounts[userId] = 0
-
-	// if s.LastInteractions == nil {
-	//     s.LastInteractions = make(map[string]int64)
-	// }
-	// s.LastInteractions[userId] = time.Now().Unix()
-
-	// Kiểm tra người chơi đã hết bài chưa
 	if len(playerCards.Cards) == 0 {
 		s.WinnerId = userId
+		s.EffectTarget = ""
+		s.PickPenalty = 0
+		s.IsEndingGame = true
+		log.GetLogger().Info("Player %s has won the game by playing the last card", userId)
+		return entity.EffectNone, nil
 	}
 
 	return effect, nil
@@ -205,13 +187,12 @@ func (e *Engine) DrawCardsFromDeck(s *entity.MatchState, userID string) (int, er
 
 	// Xác định số lá cần rút
 	cardsToDraw := 1
-	drawingPenalty := false
 
 	if s.PickPenalty > 0 && s.EffectTarget == userID {
 		cardsToDraw = s.PickPenalty
 		s.PickPenalty = 0
 		s.EffectTarget = ""
-		drawingPenalty = true
+		s.CurrentEffect = entity.EffectNone
 	}
 
 	// Rút bài từ bộ bài
@@ -219,20 +200,21 @@ func (e *Engine) DrawCardsFromDeck(s *entity.MatchState, userID string) (int, er
 	if err != nil {
 		return 0, err
 	}
+	cardsToDraw = len(card.Cards)
 
 	s.Cards[userID].Cards = append(s.Cards[userID].Cards, card.Cards...)
 
-	if s.AutoPlayCounts == nil {
-		s.AutoPlayCounts = make(map[string]int)
-	}
-
-	if s.CurrentEffect != entity.EffectGeneralMarket {
-		s.AutoPlayCounts[userID] = 0
+	if e.deck.RemainingCards() == 0 {
+		log.GetLogger().Info("Deck is empty, handle game reward")
+		s.IsEndingGame = true
+		return cardsToDraw, nil
 	}
 
 	// Xác định người chơi tiếp theo
-	if !drawingPenalty && s.CurrentEffect != entity.EffectGeneralMarket {
+	if s.CurrentEffect != entity.EffectGeneralMarket {
 		s.CurrentTurn = s.GetNextPlayerClockwise(userID)
+	} else {
+		s.CurrentEffect = entity.EffectNone
 	}
 
 	return cardsToDraw, nil
@@ -294,13 +276,13 @@ func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.Card 
 	}
 
 	for _, card := range userCards.Cards {
-		if card.Suit == topCard.Suit {
+		if card.Suit == topCard.Suit && s.CurrentEffect != entity.EffectPickTwo && s.CurrentEffect != entity.EffectPickThree {
 			return card
 		}
 	}
 
 	for _, card := range userCards.Cards {
-		if card.Rank == pb.CardRank_RANK_20 {
+		if card.Rank == pb.CardRank_RANK_20 && s.CurrentEffect != entity.EffectPickTwo && s.CurrentEffect != entity.EffectPickThree {
 			return card
 		}
 	}
@@ -308,100 +290,91 @@ func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.Card 
 }
 
 func (e *Engine) Finish(s *entity.MatchState) *pb.UpdateFinish {
+
 	updateFinish := pb.UpdateFinish{}
 
-	// Nếu có người thắng trực tiếp (đánh hết bài)
-	if s.WinnerId != "" {
-		// Người thắng nhận toàn bộ tiền
-		winResult := &pb.WhotPlayerResult{
-			UserId: s.WinnerId,
-			Score: &pb.WhotScoreResult{
-				WinFactor: 1, // Người thắng nhận toàn bộ tiền
-			},
-		}
-		updateFinish.Results = append(updateFinish.Results, winResult)
-
-		// Những người khác thua
-		for _, val := range s.PlayingPresences.Keys() {
-			uid := val.(string)
-			if uid != s.WinnerId {
-				loseResult := &pb.WhotPlayerResult{
-					UserId: uid,
-					Score: &pb.WhotScoreResult{
-						WinFactor: 0, // Người thua không nhận gì
-					},
-				}
-				updateFinish.Results = append(updateFinish.Results, loseResult)
-			}
-		}
-		return &updateFinish
-	}
-
-	// Nếu bộ bài hết mà chưa có ai hết bài, tính điểm
-	// Tính điểm cho mỗi người chơi
-	scores := make(map[string]int)
+	// 1. Tính điểm cho tất cả người chơi
+	playerScores := e.calculatePlayerScores(s) // map[uid]int
 	lowestScore := math.MaxInt32
-
-	for _, val := range s.PlayingPresences.Keys() {
-		uid := val.(string)
-		playerCards := s.Cards[uid]
-
-		// Tính tổng điểm
-		totalScore := 0
-		for _, card := range playerCards.Cards {
-			cardValue := entity.CalculateCardValue(card)
-			totalScore += cardValue
+	for _, score := range playerScores {
+		if score < lowestScore {
+			lowestScore = score
 		}
-
-		scores[uid] = totalScore
-		if totalScore < lowestScore {
-			lowestScore = totalScore
-		}
-
-		// Lưu điểm vào kết quả
-		result := &pb.WhotPlayerResult{
-			UserId: uid,
-			Score: &pb.WhotScoreResult{
-				TotalPoints: int64(totalScore),
-			},
-		}
-		updateFinish.Results = append(updateFinish.Results, result)
 	}
 
-	// Tìm những người có điểm thấp nhất
+	// 2. Tìm người chơi có điểm thấp nhất
 	winners := []string{}
-	for uid, score := range scores {
+	losers := []string{}
+	for uid, score := range playerScores {
 		if score == lowestScore {
 			winners = append(winners, uid)
+		} else {
+			losers = append(losers, uid)
 		}
 	}
 
-	// Phân bổ tiền thắng
-	winFactor := 1.0 / float64(len(winners))
+	// 3. Xác định WinnerId nếu chưa có (trường hợp hết bài rút)
+	if s.WinnerId == "" {
+		if len(winners) == 1 {
+			s.WinnerId = winners[0]
+		} else if len(winners) > 1 {
+			s.WinnerId = winners[rand.Intn(len(winners))]
+			log.GetLogger().Info("Multiple winners found, randomly selected: %s", s.WinnerId)
+		}
+	}
 
-	// Đặt kết quả cuối cùng
-	for i, result := range updateFinish.Results {
+	numLosers := float64(len(losers))
+	numWinners := float64(len(winners))
+	winFactorPerWinner := 0.0
+	if numWinners > 0 {
+		winFactorPerWinner = numLosers / numWinners
+	}
+
+	// 4. Gán kết quả cho từng người chơi
+	for uid, total := range playerScores {
 		isWinner := false
-		for _, winnerID := range winners {
-			if result.UserId == winnerID {
+		for _, w := range winners {
+			if uid == w {
 				isWinner = true
 				break
 			}
 		}
 
+		var winFactor float64
 		if isWinner {
-			updateFinish.Results[i].Score.WinFactor = float64(winFactor)
-			updateFinish.Results[i].Score.IsWinner = true
+			winFactor = winFactorPerWinner
 		} else {
-			updateFinish.Results[i].Score.WinFactor = 0
-			updateFinish.Results[i].Score.IsWinner = false
+			winFactor = -1.0
 		}
+
+		updateFinish.Results = append(updateFinish.Results, &pb.WhotPlayerResult{
+			UserId:         uid,
+			TotalPoints:    int64(total),
+			IsWinner:       isWinner,
+			WinFactor:      winFactor,
+			RemainingCards: s.Cards[uid].Cards,
+		})
 	}
 
 	return &updateFinish
 }
 
-func (e *Engine) IsValidPlay(playedCard, topCard entity.Card) bool {
+func (e *Engine) calculatePlayerScores(s *entity.MatchState) map[string]int {
+	scores := make(map[string]int)
+	for _, val := range s.PlayingPresences.Keys() {
+		uid := val.(string)
+		playerCards := s.Cards[uid]
+		total := 0
+		for _, card := range playerCards.Cards {
+			total += entity.CalculateCardValue(card)
+		}
+		scores[uid] = total
+		log.GetLogger().Info("User %s has total score: %d", uid, total)
+	}
+	return scores
+}
+
+func (e *Engine) isValidPlay(playedCard, topCard entity.Card) bool {
 
 	if playedCard.GetSuit() == entity.SuitNone && playedCard.GetRank() == entity.RankWHOT {
 		return true
@@ -432,4 +405,19 @@ func (e *Engine) ChooseAutomaticWhotShape() *pb.Card {
 		Rank: pb.CardRank_RANK_20,
 		Suit: shapes[randomIndex],
 	}
+}
+
+func (e *Engine) GetPlayerCardCounts(s *entity.MatchState) map[string]int32 {
+	counts := make(map[string]int32)
+	for _, key := range s.PlayingPresences.Keys() {
+		userId := key.(string)
+		if cards, ok := s.Cards[userId]; ok {
+			counts[userId] = int32(len(cards.Cards))
+		}
+	}
+	return counts
+}
+
+func (e *Engine) GetDeckCount() int32 {
+	return int32(e.deck.RemainingCards())
 }

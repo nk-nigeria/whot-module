@@ -12,7 +12,7 @@ import (
 // Test cho các hàm khởi tạo và xử lý bài ban đầu
 func TestNewGameAndDeal(t *testing.T) {
 	// Khởi tạo game engine
-	engine := NewWhotPokerEngine()
+	engine := NewWhotEngine()
 
 	// Mock presences
 	presences := linkedhashmap.New()
@@ -58,7 +58,7 @@ func TestNewGameAndDeal(t *testing.T) {
 
 // Test cho việc đánh bài thông thường
 func TestPlayCard_Normal(t *testing.T) {
-	engine := NewWhotPokerEngine()
+	engine := NewWhotEngine()
 	state := createTestMatchState()
 
 	// Cài đặt bài trên tay người chơi
@@ -86,7 +86,7 @@ func TestPlayCard_Normal(t *testing.T) {
 
 // Test cho việc đánh lá bài đặc biệt Hold On (1)
 func TestPlayCard_HoldOn(t *testing.T) {
-	engine := NewWhotPokerEngine()
+	engine := NewWhotEngine()
 	state := createTestMatchState()
 
 	// Cài đặt bài trên tay người chơi
@@ -109,13 +109,12 @@ func TestPlayCard_HoldOn(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, entity.EffectHoldOn, effect)
 	assert.Equal(t, cardToPlay, state.TopCard)
-	assert.True(t, state.IsHoldOn)
 	assert.Equal(t, 1, len(state.Cards["user1"].Cards))
 }
 
 // Test cho việc đánh lá bài đặc biệt Pick Two (2)
 func TestPlayCard_PickTwo(t *testing.T) {
-	engine := NewWhotPokerEngine()
+	engine := NewWhotEngine()
 	state := createTestMatchState()
 
 	// Thêm user2 vào presences
@@ -147,7 +146,7 @@ func TestPlayCard_PickTwo(t *testing.T) {
 
 // Test cho việc đánh lá Whot (20)
 func TestPlayCard_Whot(t *testing.T) {
-	engine := NewWhotPokerEngine()
+	engine := NewWhotEngine()
 	state := createTestMatchState()
 
 	// Cài đặt bài trên tay người chơi
@@ -175,7 +174,7 @@ func TestPlayCard_Whot(t *testing.T) {
 
 // Test cho việc đánh bài không hợp lệ
 func TestPlayCard_Invalid(t *testing.T) {
-	engine := NewWhotPokerEngine()
+	engine := NewWhotEngine()
 	state := createTestMatchState()
 
 	// Cài đặt bài trên tay người chơi
@@ -200,7 +199,7 @@ func TestPlayCard_Invalid(t *testing.T) {
 
 // Test cho việc rút bài
 func TestDrawCardsFromDeck(t *testing.T) {
-	engine := NewWhotPokerEngine()
+	engine := NewWhotEngine()
 	state := createTestMatchState()
 
 	// Khởi tạo và chia bài
@@ -220,7 +219,7 @@ func TestDrawCardsFromDeck(t *testing.T) {
 
 // Test cho việc kết thúc game khi có người thắng trực tiếp
 func TestFinish_DirectWinner(t *testing.T) {
-	engine := NewWhotPokerEngine()
+	engine := NewWhotEngine()
 	state := createTestMatchState()
 
 	// Thêm user2 vào presences
@@ -249,10 +248,10 @@ func TestFinish_DirectWinner(t *testing.T) {
 	var winnerFound bool
 	for _, playerResult := range result.Results {
 		if playerResult.UserId == "user1" {
-			assert.Equal(t, float64(1), playerResult.Score.WinFactor)
+			assert.Equal(t, float64(1), playerResult.WinFactor)
 			winnerFound = true
 		} else {
-			assert.Equal(t, float64(0), playerResult.Score.WinFactor)
+			assert.Equal(t, float64(0), playerResult.WinFactor)
 		}
 	}
 	assert.True(t, winnerFound)
@@ -260,7 +259,7 @@ func TestFinish_DirectWinner(t *testing.T) {
 
 // Test cho việc kết thúc game khi cần tính điểm (không có người thắng trực tiếp)
 func TestFinish_ScoreCalculation(t *testing.T) {
-	engine := NewWhotPokerEngine()
+	engine := NewWhotEngine()
 	state := createTestMatchState()
 
 	// Thêm user2 vào presences
@@ -297,14 +296,14 @@ func TestFinish_ScoreCalculation(t *testing.T) {
 	var winnerFound bool
 	for _, playerResult := range result.Results {
 		if playerResult.UserId == "user1" {
-			assert.Equal(t, float64(1), playerResult.Score.WinFactor)
-			assert.Equal(t, int64(11), playerResult.Score.TotalPoints)
-			assert.True(t, playerResult.Score.IsWinner)
+			assert.Equal(t, float64(1), playerResult.WinFactor)
+			assert.Equal(t, int64(11), playerResult.TotalPoints)
+			assert.True(t, playerResult.IsWinner)
 			winnerFound = true
 		} else {
-			assert.Equal(t, float64(0), playerResult.Score.WinFactor)
-			assert.Equal(t, int64(12), playerResult.Score.TotalPoints)
-			assert.False(t, playerResult.Score.IsWinner)
+			assert.Equal(t, float64(0), playerResult.WinFactor)
+			assert.Equal(t, int64(12), playerResult.TotalPoints)
+			assert.False(t, playerResult.IsWinner)
 		}
 	}
 	assert.True(t, winnerFound)

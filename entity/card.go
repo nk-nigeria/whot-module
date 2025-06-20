@@ -184,7 +184,7 @@ var mapRanks = map[pb.CardRank]uint8{
 	pb.CardRank_RANK_12: Ranks[11],
 	pb.CardRank_RANK_13: Ranks[12],
 	pb.CardRank_RANK_14: Ranks[13],
-	pb.CardRank_RANK_20: Ranks[19],
+	pb.CardRank_RANK_20: RankWHOT,
 }
 
 var mapSuits = map[pb.CardSuit]uint8{
@@ -244,7 +244,7 @@ func (c Card) GetSuit() uint8 {
 func CalculateCardValue(card *pb.Card) int {
 	value := int(card.GetRank())
 
-	// Lá Star có giá trị gấp đôi
+	// Lá Star có giá trị gấp đôiMore actions
 	if card.GetSuit() == pb.CardSuit(SuitStar) {
 		value *= 2
 	}

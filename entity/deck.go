@@ -80,8 +80,12 @@ func (d *Deck) Shuffle() {
 
 // Deal a specified amount of Cards
 func (d *Deck) Deal(n int, isTopCard bool) (*pb.ListCard, error) {
-	if (MaxCard - d.Dealt) < n {
-		return nil, errors.New("deck.deal.error-not-enough")
+	remainCountCards := d.RemainingCards()
+	if (remainCountCards) <= 0 {
+		return nil, errors.New("deal.no-cards-left")
+	}
+	if remainCountCards < n {
+		n = MaxCard - d.Dealt
 	}
 
 	if isTopCard {

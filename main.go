@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"time"
 
-	// "github.com/nk-nigeria/whot-module/constant"
-	// "github.com/nk-nigeria/whot-module/message_queue"
+	"github.com/nk-nigeria/whot-module/constant"
+	"github.com/nk-nigeria/whot-module/message_queue"
 	mockcodegame "github.com/nk-nigeria/whot-module/mock_code_game"
 
 	"github.com/heroiclabs/nakama-common/runtime"
@@ -31,7 +31,7 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 	unmarshaler := &proto.UnmarshalOptions{
 		DiscardUnknown: false,
 	}
-	// message_queue.InitNatsService(logger, constant.NastEndpoint, marshaler)
+	message_queue.InitNatsService(logger, constant.NastEndpoint, marshaler)
 	mockcodegame.InitMapMockCodeListCard(logger)
 	// cgbdb.RunMigrations(ctx, logger, db)
 	if err := initializer.RegisterMatch(entity.ModuleName, func(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule) (runtime.Match, error) {

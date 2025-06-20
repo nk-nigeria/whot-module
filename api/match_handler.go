@@ -55,7 +55,7 @@ func (m *MatchHandler) MatchSignal(ctx context.Context, logger runtime.Logger, d
 func NewMatchHandler(marshaler *proto.MarshalOptions, unmarshaler *proto.UnmarshalOptions) *MatchHandler {
 	fmt.Println("new match handler")
 	return &MatchHandler{
-		processor: processor.NewMatchProcessor(marshaler, unmarshaler, engine.NewWhotPokerEngine()),
+		processor: processor.NewMatchProcessor(marshaler, unmarshaler, engine.NewWhotEngine()),
 		machine:   gsm.NewGameStateMachine(),
 	}
 }

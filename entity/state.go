@@ -48,10 +48,7 @@ type MatchState struct {
 	PickPenalty         int        // Số lá phải rút khi bị phạt
 	CurrentEffect       CardEffect // Hiệu ứng đang áp dụng
 	EffectTarget        string     // ID người chơi bị ảnh hưởng
-	IsHoldOn            bool       // Trạng thái Hold On
-	IsSuspension        bool       // Trạng thái Suspension
 	WaitingForWhotShape bool       // Đang chờ người chơi chọn hình sau Whot
-	// CurrentShape       WhotCardShape    // Hình dạng hiện tại (sau khi chọn Whot)
 
 	// The top card on the table.
 	TopCard *pb.Card
@@ -64,8 +61,6 @@ type MatchState struct {
 	TimeTurn     int
 	TurnExpireAt int64
 
-	AutoPlayCounts     map[string]int   // Đếm số lượt đánh hộ liên tiếp cho mỗi người chơi
-	LastInteractions   map[string]int64 // Thời điểm tương tác cuối cùng của mỗi người chơi
 	IsEndingGame       bool
 	CountDownReachTime time.Time
 	LastCountDown      int
@@ -85,7 +80,7 @@ func NewMatchState(label *pb1.Match) MatchState {
 		PlayingPresences:    linkedhashmap.New(),
 		LeavePresences:      linkedhashmap.New(),
 		PresencesNoInteract: make(map[string]int, 0),
-		TimeTurn:            10,
+		TimeTurn:            5,
 		// balanceResult:       nil,
 	}
 	return m
@@ -105,6 +100,17 @@ func (s *MatchState) SetDealer() {
 			return
 		}
 	}
+}
+
+func (s *MatchState) ResetMatch() {
+	s.PreviousWinnerId = s.WinnerId
+	s.ResetBalanceResult()
+	s.WinnerId = ""
+	s.EffectTarget = ""
+	s.PickPenalty = 0
+	s.CurrentEffect = EffectNone
+	s.WaitingForWhotShape = false
+	s.IsEndingGame = false
 }
 
 func (s *MatchState) BuildPlayOrderFromDealer() {
@@ -140,6 +146,7 @@ func (s *MatchState) GetNextPlayerClockwise(current string) string {
 func (s *MatchState) GetBalanceResult() *pb.BalanceResult {
 	return s.balanceResult
 }
+
 func (s *MatchState) SetBalanceResult(u *pb.BalanceResult) {
 	s.balanceResult = u
 }

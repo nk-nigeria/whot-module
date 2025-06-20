@@ -14,5 +14,7 @@ type UseCase interface {
 	ChooseAutomaticWhotShape() *pb.Card
 	HandleGeneralMarket(s *entity.MatchState, userID string) error
 	FindPlayableCard(s *entity.MatchState, userId string) *pb.Card
+	GetPlayerCardCounts(s *entity.MatchState) map[string]int32
+	GetDeckCount() int32
 	Finish(s *entity.MatchState) *pb.UpdateFinish
 }

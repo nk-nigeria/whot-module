@@ -3,7 +3,6 @@ package message_queue
 import (
 	"github.com/heroiclabs/nakama-common/runtime"
 	"github.com/nats-io/nats.go"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -15,10 +14,10 @@ type NatsService struct {
 	conn      *nats.Conn
 	Url       string
 	logger    runtime.Logger
-	marshaler *protojson.MarshalOptions
+	marshaler *proto.MarshalOptions
 }
 
-func InitNatsService(logger runtime.Logger, natsUrl string, marshaler *protojson.MarshalOptions) {
+func InitNatsService(logger runtime.Logger, natsUrl string, marshaler *proto.MarshalOptions) {
 	natsService = &NatsService{
 		conn:      nil,
 		Url:       natsUrl,
