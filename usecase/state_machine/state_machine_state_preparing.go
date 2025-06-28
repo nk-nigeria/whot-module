@@ -2,7 +2,6 @@ package state_machine
 
 import (
 	"context"
-	"strings"
 
 	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 	log "github.com/nk-nigeria/whot-module/pkg/log"
@@ -26,17 +25,7 @@ func (s *StatePreparing) Enter(ctx context.Context, args ...interface{}) error {
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
 	state := procPkg.GetState()
 	log.GetLogger().Info("state %v", state.Presences)
-	// remove all user not interact 2 game continue
-	listPrecense := state.GetPresenceNotInteract(2)
-	if len(listPrecense) > 0 {
-		listUserId := make([]string, len(listPrecense))
-		for _, p := range listPrecense {
-			listUserId = append(listUserId, p.GetUserId())
-		}
-		procPkg.GetLogger().Info("Kick %d user from math %s",
-			len(listPrecense), strings.Join(listUserId, ","))
-		state.AddLeavePresence(listPrecense...)
-	}
+
 	procPkg.GetProcessor().ProcessApplyPresencesLeave(ctx,
 		procPkg.GetLogger(),
 		procPkg.GetNK(),
@@ -84,6 +73,11 @@ func (s *StatePreparing) Process(ctx context.Context, args ...interface{}) error
 	} else {
 		// check preparing condition
 		// log.GetLogger().Info("[preparing] preparing timeout check presence count")
+		if state.GetPresenceNotBotSize() == 0 {
+			s.Trigger(ctx, triggerIdle)
+			log.GetLogger().Info("[preparing] no one presence, trigger idle")
+			return nil
+		}
 		if state.IsReadyToPlay() {
 			// change to play
 			s.Trigger(ctx, triggerPreparingDone)

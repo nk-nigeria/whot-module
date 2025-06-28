@@ -21,11 +21,6 @@ func NewWhotEngine() UseCase {
 }
 
 func (e *Engine) NewGame(s *entity.MatchState) error {
-	s.Cards = make(map[string]*pb.ListCard)
-	if s.WinnerId != "" {
-		log.GetLogger().Info("Resetting match state for new game")
-		s.ResetMatch()
-	}
 	s.SetDealer()
 	s.CurrentTurn = s.DealerId
 	return nil
@@ -213,10 +208,7 @@ func (e *Engine) DrawCardsFromDeck(s *entity.MatchState, userID string) (int, er
 	// Xác định người chơi tiếp theo
 	if s.CurrentEffect != entity.EffectGeneralMarket {
 		s.CurrentTurn = s.GetNextPlayerClockwise(userID)
-	} else {
-		s.CurrentEffect = entity.EffectNone
 	}
-
 	return cardsToDraw, nil
 }
 
@@ -224,12 +216,12 @@ func (e *Engine) HandleGeneralMarket(s *entity.MatchState, userID string) error 
 	for _, key := range s.PlayingPresences.Keys() {
 		otherUserId := key.(string)
 		if otherUserId != userID {
-			cardsToDraw, err := e.DrawCardsFromDeck(s, otherUserId)
-			if cardsToDraw == 1 {
-				continue
-			}
+			_, err := e.DrawCardsFromDeck(s, otherUserId)
 			if err != nil {
 				return err
+			}
+			if s.IsEndingGame {
+				return nil
 			}
 
 		}

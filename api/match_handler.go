@@ -17,25 +17,20 @@ package api
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/heroiclabs/nakama-common/runtime"
 	pb1 "github.com/nk-nigeria/cgp-common/proto"
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 	"github.com/nk-nigeria/whot-module/api/presenter"
-	"github.com/nk-nigeria/whot-module/cgbdb"
+	"github.com/nk-nigeria/whot-module/constant"
 	"github.com/nk-nigeria/whot-module/entity"
 	"github.com/nk-nigeria/whot-module/pkg/packager"
 	"github.com/nk-nigeria/whot-module/usecase/engine"
 	"github.com/nk-nigeria/whot-module/usecase/processor"
 	gsm "github.com/nk-nigeria/whot-module/usecase/state_machine"
 	"github.com/qmuntal/stateless"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
-)
-
-const (
-	tickRate = 2
 )
 
 // Compile-time check to make sure all required functions are implemented.
@@ -77,35 +72,28 @@ func (m *MatchHandler) MatchInit(ctx context.Context, logger runtime.Logger, db 
 		logger.Error("failed to unmarshal match label: %v", err)
 		return nil, 0, ""
 	}
-	logger.Info("match init: %+v", matchInfo)
 
 	matchInfo.Name = entity.ModuleName
 	matchInfo.MaxSize = entity.MaxPresences
 	matchInfo.MockCodeCard = 0
-	matchJson, err := json.Marshal(matchInfo)
+
+	logger.Info("match init: %+v", matchInfo)
+
+	matchJson, err := protojson.Marshal(matchInfo)
 	if err != nil {
 		logger.Error("match init json label failed ", err)
-		return nil, tickRate, ""
+		return nil, constant.TickRate, ""
 	}
 
 	logger.Info("match init label= %s", string(matchJson))
 
 	matchState := entity.NewMatchState(matchInfo)
 
-	// init jackpot nếu có
-	jpTreasure, _ := cgbdb.GetJackpot(ctx, logger, db, entity.ModuleName)
-	if jpTreasure != nil {
-		matchState.SetJackpotTreasure(&pb.Jackpot{
-			GameCode: jpTreasure.GetGameCode(),
-			Chips:    jpTreasure.Chips,
-		})
-	}
-
 	// fire idle event
 	procPkg := packager.NewProcessorPackage(&matchState, m.processor, logger, nil, nil, nil, nil, nil)
 	m.machine.TriggerIdle(packager.GetContextWithProcessorPackager(procPkg))
 
-	return &matchState, tickRate, string(matchJson)
+	return &matchState, constant.TickRate, string(matchJson)
 }
 
 func (m *MatchHandler) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, messages []runtime.MatchData) interface{} {
@@ -123,6 +111,7 @@ func (m *MatchHandler) MatchLoop(ctx context.Context, logger runtime.Logger, db 
 	))
 	if err == presenter.ErrGameFinish {
 		logger.Info("match need finish")
+		// fire finish event
 
 		return nil
 	}
@@ -131,7 +120,7 @@ func (m *MatchHandler) MatchLoop(ctx context.Context, logger runtime.Logger, db 
 }
 
 func (m *MatchHandler) MatchTerminate(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, graceSeconds int) interface{} {
-	logger.Info("match terminate, state=%v")
+	logger.Info("match terminate state= %v , shutdown in graceSeconds = %v", state, graceSeconds)
 	m.processor.ProcessMatchTerminate(ctx, logger, nk, db, dispatcher, state.(*entity.MatchState))
 	return state
 }

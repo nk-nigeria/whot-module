@@ -15,7 +15,7 @@ func (m *MatchHandler) MatchJoinAttempt(ctx context.Context, logger runtime.Logg
 	logger.Info("match join attempt, state=%v, meta=%v", s, metadata)
 
 	// check password
-	if s.Label.Open == false {
+	if !s.Label.Open {
 		logger.Info("match protect with password, check password")
 		joinPassword := metadata["password"]
 		if joinPassword != s.Label.Password {
@@ -24,19 +24,22 @@ func (m *MatchHandler) MatchJoinAttempt(ctx context.Context, logger runtime.Logg
 	}
 
 	// Check if it's a user attempting to rejoin after a disconnect.
-	if p, _ := s.Presences.Get(presence.GetUserId()); p != nil {
-		// if p == nil {
-		// 	// User rejoining after a disconnect.
-		logger.Info("user %s rejoin after disconnect", presence.GetUserId())
-		s.RemoveLeavePresence(presence.GetUserId())
-
-		s.JoinsInProgress++
-		return s, true, ""
-		// } else {
-		// 	// User attempting to join from 2 different devices at the same time.
-		// 	logger.Info("user %s  join from 2 different devices at the same time. --> reject join match", presence.GetUserId())
-		// 	return s, false, "already joined"
-		// }
+	if pRaw, _ := s.Presences.Get(presence.GetUserId()); pRaw != nil {
+		if p, ok := pRaw.(entity.MyPrecense); ok {
+			uid := presence.GetUserId()
+			deviceID := metadata["device_id"]
+			if p.Presence.GetSessionId() == presence.GetSessionId() || p.DeviceID == deviceID {
+				logger.Info("user %s rejoin after disconnect ", uid)
+				s.JoinsInProgress++
+				return s, true, "Rejoining match Successfully"
+			} else {
+				logger.Info("user %s join from 2 different devices at the same time. --> reject join match", uid)
+				return s, false, "you were in another table"
+			}
+		} else {
+			logger.Warn("Presence type assertion failed")
+			return s, false, "internal error"
+		}
 	}
 
 	// join as new user
@@ -58,7 +61,7 @@ func (m *MatchHandler) MatchJoinAttempt(ctx context.Context, logger runtime.Logg
 
 	// New player attempting to connect.
 	s.JoinsInProgress++
-	return s, true, ""
+	return s, true, "Join match Successfully"
 }
 
 func (m *MatchHandler) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, presences []runtime.Presence) interface{} {

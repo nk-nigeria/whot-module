@@ -57,7 +57,7 @@ func (s *StateIdle) Process(ctx context.Context, args ...interface{}) error {
 	state := procPkg.GetState()
 	// log.GetLogger().Info("state presences size %v", state.GetPresenceSize())
 
-	if state.GetPresenceSize() > 0 {
+	if state.GetPresenceSize() > 0 && state.GetPresenceNotBotSize() > 0 {
 		s.Trigger(ctx, triggerMatching)
 	}
 

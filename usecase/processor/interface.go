@@ -19,7 +19,7 @@ type UseCase interface {
 	ChooseWhotShape(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) //  chọn hình sau khi đánh Whot
 	DrawCard(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData)        // Rút bài nếu không đánh được
 	UpdateTurn(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState)
-	CheckAndHandleTurnTimeout(ctx context.Context, logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) bool
+	CheckAndHandleTurnTimeout(ctx context.Context, logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState)
 
 	// State update
 	NotifyUpdateGameState(s *entity.MatchState, logger runtime.Logger, dispatcher runtime.MatchDispatcher, updateState proto.Message)

@@ -2,7 +2,6 @@ package state_machine
 
 import (
 	"context"
-	"time"
 
 	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 	log "github.com/nk-nigeria/whot-module/pkg/log"
@@ -25,9 +24,8 @@ func (s *StateMatching) Enter(ctx context.Context, _ ...interface{}) error {
 	log.GetLogger().Info("[matching] enter")
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
 	state := procPkg.GetState()
-	state.SetUpCountDown(1 * time.Second)
+	state.SetUpCountDown(matchingTimeout)
 	procPkg.GetLogger().Info("apply leave presence")
-
 	procPkg.GetProcessor().ProcessApplyPresencesLeave(
 		procPkg.GetContext(),
 		procPkg.GetLogger(),
@@ -40,7 +38,8 @@ func (s *StateMatching) Enter(ctx context.Context, _ ...interface{}) error {
 		procPkg.GetLogger(),
 		procPkg.GetDispatcher(),
 		&pb.UpdateGameState{
-			State: pb.GameState_GameStateMatching,
+			State:     pb.GameState_GameStateMatching,
+			CountDown: int64(state.GetRemainCountDown()),
 		},
 	)
 	return nil
@@ -57,6 +56,12 @@ func (s *StateMatching) Process(ctx context.Context, args ...interface{}) error 
 	state := procPkg.GetState()
 	remain := state.GetRemainCountDown()
 	if remain > 0 {
+		return nil
+	}
+
+	if state.GetPresenceNotBotSize() == 0 {
+		s.Trigger(ctx, triggerIdle)
+		log.GetLogger().Info("[matching] no one presence, trigger idle")
 		return nil
 	}
 

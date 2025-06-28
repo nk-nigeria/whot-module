@@ -43,7 +43,8 @@ func (s *StateReward) Exit(ctx context.Context, _ ...interface{}) error {
 	// clear result
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
 	state := procPkg.GetState()
-	state.ResetBalanceResult()
+	state.AddUserNotInteractToLeaves()
+	state.ResetMatch()
 	return nil
 }
 

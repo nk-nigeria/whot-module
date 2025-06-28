@@ -10,6 +10,7 @@ import (
 
 	"github.com/heroiclabs/nakama-common/api"
 	"github.com/heroiclabs/nakama-common/runtime"
+	"github.com/nk-nigeria/cgp-common/bot"
 	"github.com/nk-nigeria/cgp-common/define"
 	pb1 "github.com/nk-nigeria/cgp-common/proto"
 	pb "github.com/nk-nigeria/cgp-common/proto/whot"
@@ -81,6 +82,24 @@ func (m *processor) ProcessNewGame(logger runtime.Logger, dispatcher runtime.Mat
 }
 
 func (m *processor) UpdateTurn(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) {
+	if entity.BotLoader.IsBot(s.CurrentTurn) {
+		botPresence, ok := s.GetPresence(s.CurrentTurn).(*bot.BotPresence)
+		if ok {
+			// Tạo một botTurn mới (1 lần thực thi sau random ticks)
+			logger.Info("Bot %s init turn", s.CurrentTurn)
+			botPresence.InitTurnWithOption(bot.TurnOpt{
+				MinTick:  constant.TickRate * 1, // 1 giây = 1 * tickRate
+				MaxTick:  constant.TickRate * 9, // 9 giây = 9 * tickRate
+				MaxOccur: 1,                     // chỉ đánh 1 lần
+			},
+				func() {
+					// Gọi xử lý đánh bài của bot tại đây
+					m.HandleAutoPlay(logger, dispatcher, s)
+				})
+		} else {
+			logger.Warn("Failed to cast presence to BotPresence for bot: %s", s.CurrentTurn)
+		}
+	}
 
 	s.TurnExpireAt = time.Now().Unix() + int64(s.TimeTurn)
 	turnUpdate := &pb.UpdateTurn{
@@ -291,20 +310,35 @@ func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 	m.UpdateTurn(logger, dispatcher, s)
 }
 
-func (m *processor) CheckAndHandleTurnTimeout(ctx context.Context, logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) bool {
-	// Kiểm tra xem đã hết thời gian lượt chưa
-	if s.TurnExpireAt <= 0 || time.Now().Unix() <= s.TurnExpireAt {
-		return false
-	}
+func (m *processor) CheckAndHandleTurnTimeout(ctx context.Context, logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) {
 
 	userID := s.CurrentTurn
-	logger.Info("Turn timeout for user %s, auto-playing", userID)
+	// Nếu là bot thì gọi loop của bot
+	if entity.BotLoader.IsBot(userID) {
+		if bp, ok := s.GetPresence(userID).(*bot.BotPresence); ok {
+			bp.Loop()
+		}
+		return
+	}
 
+	// Kiểm tra xem đã hết thời gian lượt của user hay chưa
+	if s.TurnExpireAt <= 0 || time.Now().Unix() <= s.TurnExpireAt {
+		return
+	}
+
+	logger.Info("User %s did not interact in time, auto-playing", userID)
+	s.TurnExpireAt = 0
+	s.SetUserNotInteract(userID)
+	m.HandleAutoPlay(logger, dispatcher, s)
+}
+
+func (m *processor) HandleAutoPlay(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) bool {
 	if s.WaitingForWhotShape {
 		m.ChooseWhotShape(logger, dispatcher, s, nil)
 		return true
 	} else {
 		// Thực hiện đánh hộ - thử tìm bài phù hợp để đánh
+		userID := s.CurrentTurn
 		userCards := s.Cards[userID]
 		if userCards != nil && len(userCards.Cards) > 0 {
 			m.PlayCard(logger, dispatcher, s, nil)
@@ -373,7 +407,7 @@ func (m *processor) broadcastMessage(logger runtime.Logger, dispatcher runtime.M
 
 	err = dispatcher.BroadcastMessage(opCode, dataByte, presences, sender, true)
 	if err != nil {
-		logger.Error("Error BroadcastMessage, message: %s", string(dataByte))
+		logger.Error("Error BroadcastMessage, message: %s, err : %v", string(jsonData), err)
 		return err
 	}
 
@@ -520,7 +554,7 @@ func (m *processor) updateChipByResultGameFinish(ctx context.Context, logger run
 
 func (m *processor) notifyUpdateTable(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, s *entity.MatchState, joins, leaves []runtime.Presence) {
 	players := entity.NewListPlayer(s.GetPresences())
-	// players.ReadProfile(ctx, nk, logger)
+	players.ReadProfile(ctx, nk, logger)
 
 	playing_players := entity.NewListPlayer(s.GetPlayingPresences())
 	// playing_players.ReadWallet(ctx, nk, logger)
@@ -541,30 +575,16 @@ func (m *processor) notifyUpdateTable(ctx context.Context, logger runtime.Logger
 		Players:        players,
 		PlayingPlayers: playing_players,
 	}
-	{
-		// mapPlayging := make(map[string]bool, 0)
 
-		// for _, p := range msg.Players {
-		// 	// check playing
-		// 	mapUserPlaying := s.PlayingPresences
-		// 	_, p.IsPlaying = mapUserPlaying.Get(p.GetId())
-		// 	// status hold card
-		// 	if _, exist := s.OrganizeCards[p.GetId()]; exist {
-		// 		p.CardStatus = pb.CardStatus(pb.CardEvent_DRAW)
-		// 		// p.Cards = s.OrganizeCards[p.GetId()]
-		// 	} else {
-		// 		p.CardStatus = pb.CardStatus(pb.CardEvent_DRAW)
-		// 	}
-		// }
-	}
-	msg.JpTreasure = s.GetJackpotTreasure()
+	// msg.JpTreasure = s.GetJackpotTreasure()
 	msg.RemainTime = int64(s.GetRemainCountDown())
 	msg.GameState = s.GameState
 
 	m.NotifyUpdateTable(s, logger, dispatcher, msg)
 }
 
-func (m *processor) ProcessPresencesJoin(ctx context.Context,
+func (m *processor) ProcessPresencesJoin(
+	ctx context.Context,
 	logger runtime.Logger,
 	nk runtime.NakamaModule, db *sql.DB,
 	dispatcher runtime.MatchDispatcher,
@@ -572,98 +592,111 @@ func (m *processor) ProcessPresencesJoin(ctx context.Context,
 	presences []runtime.Presence,
 ) {
 	logger.Info("process presences join %v", presences)
-	// update new presence
-	newJoins := make([]runtime.Presence, 0)
 
-	for _, presence := range presences {
-		// check in list leave pending
-		{
-			_, found := s.LeavePresences.Get(presence.GetUserId())
-			if found {
-				s.LeavePresences.Remove(presence.GetUserId())
-			} else {
-				newJoins = append(newJoins, presence)
+	newJoins := make([]runtime.Presence, 0, len(presences))
+	listUserId := make([]string, 0, len(presences))
+	for _, p := range presences {
+		uid := p.GetUserId()
+		if _, found := s.LeavePresences.Get(uid); found {
+			s.RemoveLeavePresence(uid)
+		} else if _, found := s.Presences.Get(uid); !found {
+			newJoins = append(newJoins, p)
+			listUserId = append(listUserId, uid)
+		}
+	}
+
+	// Cập nhật danh sách người chơi mới
+	s.AddPresence(ctx, nk, db, presences)
+	s.JoinsInProgress -= len(presences)
+	// Cập nhật playing_match vào DB
+	// if len(listUserId) > 0 {
+	// 	matchID, _ := ctx.Value(runtime.RUNTIME_CTX_MATCH_ID).(string)
+	// 	playingMatch := &pb1.PlayingMatch{
+	// 		Code:    entity.ModuleName,
+	// 		MatchId: matchID,
+	// 	}
+	// 	if data, err := json.Marshal(playingMatch); err == nil {
+	// 		cgbdb.UpdateUsersPlayingInMatch(ctx, logger, db, listUserId, string(data))
+	// 	}
+	// }
+
+	if len(listUserId) > 0 {
+		m.emitNkEvent(ctx, define.NakEventMatchJoin, nk, listUserId, s)
+	}
+
+	// Cập nhật bàn chơi
+	m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, presences, nil)
+
+	switch s.GameState {
+	case pb.GameState_GameStateReward:
+		// Nếu đã hết game thì gửi balance
+		if result := s.GetBalanceResult(); result != nil {
+			m.broadcastMessage(
+				logger, dispatcher,
+				int64(pb.OpCodeUpdate_OPCODE_UPDATE_WALLET),
+				result, presences, nil, true,
+			)
+		}
+
+	case pb.GameState_GameStatePlay:
+		// Gửi trạng thái số lá bài trên bàn
+		cardState := &pb.UpdateCardState{
+			Event:            pb.CardEvent_NONE,
+			DeckCount:        m.engine.GetDeckCount(),
+			PlayerCardCounts: m.engine.GetPlayerCardCounts(s),
+			TopCard:          s.TopCard,
+		}
+		if err := m.broadcastMessage(
+			logger, dispatcher,
+			int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE),
+			cardState, presences, nil, true,
+		); err != nil {
+			logger.Error("failed to broadcast card state: %v", err)
+		}
+
+		// Gửi lượt hiện tại
+		if s.CurrentTurn != "" {
+			turnUpdate := &pb.UpdateTurn{
+				UserId:    s.CurrentTurn,
+				Countdown: int64(s.TurnExpireAt - time.Now().Unix()),
+			}
+			if err := m.broadcastMessage(
+				logger, dispatcher,
+				int64(pb.OpCodeUpdate_OPCODE_UPDATE_TURN),
+				turnUpdate, nil, nil, true,
+			); err != nil {
+				logger.Error("failed to broadcast turn update: %v", err)
 			}
 		}
-	}
 
-	s.AddPresence(ctx, nk, newJoins)
-	s.JoinsInProgress -= len(newJoins)
+		// Gửi bài riêng cho từng người
+		for _, p := range presences {
+			uid := p.GetUserId()
 
-	// update match profile user
-	{
-		var listUserId []string
-		for _, p := range newJoins {
-			listUserId = append(listUserId, p.GetUserId())
-		}
-		matchId, _ := ctx.Value(runtime.RUNTIME_CTX_MATCH_ID).(string)
-		playingMatch := &pb1.PlayingMatch{
-			Code:    entity.ModuleName,
-			MatchId: matchId,
-		}
-		playingMatchJson, _ := json.Marshal(playingMatch)
-		cgbdb.UpdateUsersPlayingInMatch(ctx, logger, db, listUserId, string(playingMatchJson))
-	}
-
-	for _, presence := range newJoins {
-		m.emitNkEvent(ctx, define.NakEventMatchJoin, nk, presence.GetUserId(), s)
-	}
-
-	m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, presences, nil)
-	//send cards for player rejoin
-	for _, presence := range presences {
-		if _, found := s.PlayingPresences.Get(presence.GetUserId()); found {
-			card := s.Cards[presence.GetUserId()]
-			if card == nil {
+			if _, found := s.PlayingPresences.Get(uid); !found {
 				continue
 			}
-			dealMsg := &pb.UpdateDeal{
+			s.AddPlayingPresences(p)
+
+			cards := s.Cards[uid]
+			if cards == nil || len(cards.Cards) == 0 {
+				continue
+			}
+
+			msg := &pb.UpdateDeal{
 				PresenceCard: &pb.PresenceCards{
-					Presence: presence.GetUserId(),
-					Cards:    card.Cards,
+					Presence: uid,
+					Cards:    cards.Cards,
 				},
 				TopCard: s.TopCard,
 			}
-			m.broadcastMessage(
+			if err := m.broadcastMessage(
 				logger, dispatcher,
-				int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL), dealMsg,
-				[]runtime.Presence{presence}, nil, true)
-		}
-	}
-	// send update wallet for new user join
-	switch s.GameState {
-	case pb.GameState_GameStateReward:
-		{
-			balanceResult := s.GetBalanceResult()
-			if balanceResult != nil {
-				m.broadcastMessage(
-					logger,
-					dispatcher,
-					int64(pb.OpCodeUpdate_OPCODE_UPDATE_WALLET),
-					balanceResult,
-					presences,
-					nil,
-					true,
-				)
+				int64(pb.OpCodeUpdate_OPCODE_UPDATE_DEAL),
+				msg, []runtime.Presence{p}, nil, true,
+			); err != nil {
+				logger.Error("failed to send cards to %s: %v", uid, err)
 			}
-		}
-	case pb.GameState_GameStatePlay:
-		{
-			cardState := &pb.UpdateCardState{
-				Event:            pb.CardEvent_NONE,
-				DeckCount:        m.engine.GetDeckCount(),
-				PlayerCardCounts: m.engine.GetPlayerCardCounts(s),
-			}
-
-			err := m.broadcastMessage(logger, dispatcher,
-				int64(pb.OpCodeUpdate_OPCODE_UPDATE_CARD_STATE), cardState,
-				presences, nil, true)
-			if err != nil {
-				logger.Error("failed to broadcast CountCard UpdateCardState: %v", err)
-			}
-		}
-	default:
-		{
 		}
 	}
 }
@@ -671,17 +704,18 @@ func (m *processor) ProcessPresencesJoin(ctx context.Context,
 func (m *processor) ProcessPresencesLeave(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule, db *sql.DB, dispatcher runtime.MatchDispatcher, s *entity.MatchState, presences []runtime.Presence) {
 	logger.Info("process presences leave %v", presences)
 	s.RemovePresence(presences...)
-	var listUserId []string
+	listUserId := make([]string, 0, len(presences))
 	for _, p := range presences {
 		listUserId = append(listUserId, p.GetUserId())
-		m.emitNkEvent(ctx, define.NakEventMatchLeave, nk, p.GetUserId(), s)
 	}
-	cgbdb.UpdateUsersPlayingInMatch(ctx, logger, db, listUserId, "")
+	m.emitNkEvent(ctx, define.NakEventMatchLeave, nk, listUserId, s)
+	// cgbdb.UpdateUsersPlayingInMatch(ctx, logger, db, listUserId, "")
 	m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, nil, presences)
 }
 
 func (m *processor) ProcessPresencesLeavePending(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, s *entity.MatchState, presences []runtime.Presence) {
 	logger.Info("process presences leave pending %v", presences)
+	listUserId := make([]string, 0, len(presences))
 	for _, presence := range presences {
 		_, found := s.PlayingPresences.Get(presence.GetUserId())
 		if found {
@@ -689,9 +723,13 @@ func (m *processor) ProcessPresencesLeavePending(ctx context.Context, logger run
 		} else {
 			s.RemovePresence(presence)
 			m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, nil, []runtime.Presence{presence})
+			listUserId = append(listUserId, presence.GetUserId())
 		}
-		m.emitNkEvent(ctx, define.NakEventMatchLeave, nk, presence.GetUserId(), s)
 	}
+	if len(listUserId) > 0 {
+		m.emitNkEvent(ctx, define.NakEventMatchLeave, nk, listUserId, s)
+	}
+
 }
 
 func (m *processor) ProcessApplyPresencesLeave(ctx context.Context,
@@ -703,38 +741,40 @@ func (m *processor) ProcessApplyPresencesLeave(ctx context.Context,
 ) {
 	pendingLeaves := s.GetLeavePresences()
 
-	if len(pendingLeaves) == 0 {
+	if len(pendingLeaves) <= 0 {
 		return
 	}
 	logger.Info("process apply presences")
 
-	s.RemovePresence(pendingLeaves...)
+	s.ApplyLeavePresence() // cật nhật lại danh sách người chơi
 
-	if len(pendingLeaves) > 0 {
-		listUserId := make([]string, 0)
-		for _, p := range pendingLeaves {
-			listUserId = append(listUserId, p.GetUserId())
-		}
-		cgbdb.UpdateUsersPlayingInMatch(ctx, logger, db, listUserId, "")
-		logger.Info("notify to player kick off %s", strings.Join(listUserId, ","))
-		m.broadcastMessage(
-			logger, dispatcher,
-			int64(pb.OpCodeUpdate_OPCODE_KICK_OFF_THE_TABLE),
-			nil, pendingLeaves, nil, true)
+	listUserId := make([]string, 0, len(pendingLeaves))
+	for _, p := range pendingLeaves {
+		listUserId = append(listUserId, p.GetUserId())
 	}
-	s.ApplyLeavePresence()
+
+	m.emitNkEvent(ctx, define.NakEventMatchLeave, nk, listUserId, s)
+	// cgbdb.UpdateUsersPlayingInMatch(ctx, logger, db, listUserId, "")
+
+	logger.Info("notify to player kick off %s", strings.Join(listUserId, ","))
+	m.broadcastMessage(
+		logger, dispatcher,
+		int64(pb.OpCodeUpdate_OPCODE_KICK_OFF_THE_TABLE),
+		nil, pendingLeaves, nil, true)
 
 	players := entity.NewListPlayer(s.GetPresences())
-	// players.ReadWallet(ctx, nk, logger)
+	players.ReadProfile(ctx, nk, logger)
 
 	playing_players := entity.NewListPlayer(s.GetPlayingPresences())
 	// playing_players.ReadWallet(ctx, nk, logger)
+
+	leaves_player := entity.NewListPlayer(pendingLeaves)
 
 	msg := &pb.UpdateTable{
 		Bet:            int64(s.Label.Bet.GetMarkUnit()),
 		Players:        players,
 		PlayingPlayers: playing_players,
-		JpTreasure:     s.GetJackpotTreasure(),
+		LeavePlayers:   leaves_player,
 	}
 
 	m.NotifyUpdateTable(s, logger, dispatcher, msg)
@@ -747,9 +787,11 @@ func (m *processor) ProcessMatchTerminate(ctx context.Context,
 	dispatcher runtime.MatchDispatcher,
 	s *entity.MatchState,
 ) {
+	listUserId := make([]string, 0, len(s.GetPresences()))
 	for _, presence := range s.GetPresences() {
-		m.emitNkEvent(ctx, define.NakEventMatchEnd, nk, presence.GetUserId(), s)
+		listUserId = append(listUserId, presence.GetUserId())
 	}
+	m.emitNkEvent(ctx, define.NakEventMatchEnd, nk, listUserId, s)
 }
 
 // check win jackpot, and always get jackpot treasure before exit
@@ -839,17 +881,29 @@ func (m *processor) readJackpotTreasure(
 	}
 }
 
-func (m *processor) emitNkEvent(ctx context.Context, eventNk define.NakEvent, nk runtime.NakamaModule, userId string, s *entity.MatchState) {
+func (m *processor) emitNkEvent(ctx context.Context, eventNk define.NakEvent, nk runtime.NakamaModule, userIds []string, s *entity.MatchState) {
+
 	matchId, _ := ctx.Value(runtime.RUNTIME_CTX_MATCH_ID).(string)
+	gameCode := entity.ModuleName
+	endMatchUnix := strconv.FormatInt(time.Now().Unix(), 10)
+	mcbValue := strconv.FormatInt(int64(s.Label.Bet.GetMarkUnit()), 10)
+
+	if eventNk == define.NakEventMatchLeave || eventNk == define.NakEventMatchEnd {
+		matchId = ""
+		gameCode = ""
+		endMatchUnix = ""
+		mcbValue = ""
+	}
+
 	nk.Event(ctx, &api.Event{
 		Name:      string(eventNk),
 		Timestamp: timestamppb.Now(),
 		Properties: map[string]string{
-			"user_id":        userId,
-			"game_code":      entity.ModuleName,
-			"end_match_unix": strconv.FormatInt(time.Now().Unix(), 10),
+			"user_id":        strings.Join(userIds, ","),
+			"game_code":      gameCode,
+			"end_match_unix": endMatchUnix,
 			"match_id":       matchId,
-			"mcb":            strconv.FormatInt(int64(s.Label.Bet.GetMarkUnit()), 10),
+			"mcb":            mcbValue,
 		},
 	})
 }

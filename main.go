@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/heroiclabs/nakama-common/runtime"
+	"github.com/nk-nigeria/cgp-common/bot"
+	"github.com/nk-nigeria/cgp-common/define"
 	"github.com/nk-nigeria/whot-module/constant"
+	"github.com/nk-nigeria/whot-module/entity"
 	"github.com/nk-nigeria/whot-module/message_queue"
 	mockcodegame "github.com/nk-nigeria/whot-module/mock_code_game"
-
-	"github.com/heroiclabs/nakama-common/runtime"
-	"github.com/nk-nigeria/whot-module/entity"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/nk-nigeria/whot-module/api"
@@ -26,7 +27,7 @@ const (
 // noinspection GoUnusedExportedFunction
 func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, initializer runtime.Initializer) error {
 	initStart := time.Now()
-
+	bot.LoadBotsInfo(ctx, nk, db)
 	marshaler := &proto.MarshalOptions{}
 	unmarshaler := &proto.UnmarshalOptions{
 		DiscardUnknown: false,
@@ -97,6 +98,8 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 	// }
 	// return matchId, nil
 	// })
+
+	entity.BotLoader = bot.NewBotLoader(db, define.WhotGame.String(), 100000)
 
 	if err := api.RegisterSessionEvents(db, nk, initializer); err != nil {
 		return err
