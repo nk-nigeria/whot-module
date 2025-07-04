@@ -10,10 +10,11 @@ import (
 
 type MyPrecense struct {
 	runtime.Presence
-	AvatarId string
-	Chips    int64
-	VipLevel int64
-	DeviceID string
+	AvatarId   string
+	Chips      int64
+	VipLevel   int64
+	DeviceID   string
+	IsAutoPlay bool
 }
 
 // type ListMyPrecense []MyPrecense
@@ -37,6 +38,7 @@ func NewMyPrecense(ctx context.Context, nk runtime.NakamaModule, db *sql.DB, pre
 	m.Chips = p.AccountChip
 	m.VipLevel = p.VipLevel
 	m.DeviceID = deviceID
+	m.IsAutoPlay = false
 	return m
 }
 

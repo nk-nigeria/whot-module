@@ -82,6 +82,7 @@ func (m *processor) ProcessNewGame(logger runtime.Logger, dispatcher runtime.Mat
 }
 
 func (m *processor) UpdateTurn(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) {
+	timeTurn := s.TimeTurn
 	if entity.BotLoader.IsBot(s.CurrentTurn) {
 		botPresence, ok := s.GetPresence(s.CurrentTurn).(*bot.BotPresence)
 		if ok {
@@ -99,13 +100,21 @@ func (m *processor) UpdateTurn(logger runtime.Logger, dispatcher runtime.MatchDi
 		} else {
 			logger.Warn("Failed to cast presence to BotPresence for bot: %s", s.CurrentTurn)
 		}
-	}
+	} else {
+		// Nếu là user đang bật trạng thái autoplay thì server tự đánh.
+		if s.PresencesNoInteract[s.CurrentTurn] {
+			timeTurn = 1
+		} else {
+			s.SetUserNotInteract(s.CurrentTurn, true)
+		}
 
-	s.TurnExpireAt = time.Now().Unix() + int64(s.TimeTurn)
+	}
+	s.TurnExpireAt = time.Now().Unix() + int64(timeTurn)
 	turnUpdate := &pb.UpdateTurn{
 		UserId:    s.CurrentTurn,
 		Countdown: int64(s.TimeTurn),
 	}
+
 	err := m.broadcastMessage(logger, dispatcher, int64(pb.OpCodeUpdate_OPCODE_UPDATE_TURN), turnUpdate, nil, nil, true)
 	if err != nil {
 		logger.Error("failed to broadcast UpdateTurn: %v", err)
@@ -225,7 +234,7 @@ func (m *processor) ChooseWhotShape(logger runtime.Logger, dispatcher runtime.Ma
 
 	if message == nil {
 		userID = s.CurrentTurn
-		payload = *m.engine.ChooseAutomaticWhotShape()
+		payload = *m.engine.ChooseAutomaticWhotShape(s)
 	} else {
 		userID = message.GetUserId()
 		m.unmarshaler.Unmarshal(message.GetData(), &payload)
@@ -328,7 +337,6 @@ func (m *processor) CheckAndHandleTurnTimeout(ctx context.Context, logger runtim
 
 	logger.Info("User %s did not interact in time, auto-playing", userID)
 	s.TurnExpireAt = 0
-	s.SetUserNotInteract(userID)
 	m.HandleAutoPlay(logger, dispatcher, s)
 }
 
@@ -389,6 +397,15 @@ func (m *processor) ProcessFinishGame(ctx context.Context, logger runtime.Logger
 	)
 
 	logger.Info("process finish game done %v", updateFinish)
+}
+
+func (m *processor) AddBotToMatch(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule, db *sql.DB, dispatcher runtime.MatchDispatcher, s *entity.MatchState, count int) error {
+	if count <= 0 {
+		return nil
+	}
+	bJoin := s.AddBotToMatch(count)
+	m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, bJoin, nil)
+	return nil
 }
 
 func (m *processor) broadcastMessage(logger runtime.Logger, dispatcher runtime.MatchDispatcher, opCode int64, data proto.Message, presences []runtime.Presence, sender runtime.Presence, reliable bool) error {
@@ -778,6 +795,23 @@ func (m *processor) ProcessApplyPresencesLeave(ctx context.Context,
 	}
 
 	m.NotifyUpdateTable(s, logger, dispatcher, msg)
+}
+
+func (m *processor) ProcessKickUserNotInterac(logger runtime.Logger,
+	dispatcher runtime.MatchDispatcher,
+	s *entity.MatchState,
+) {
+	leaves := s.GetPresenceNotInteract()
+	if len(leaves) > 0 {
+		err := dispatcher.MatchKick(leaves)
+		if err != nil {
+			logger.Error("Failed to kick users not interact: %v", err)
+			return
+		}
+		m.broadcastMessage(logger, dispatcher,
+			int64(pb.OpCodeUpdate_OPCODE_KICK_OFF_THE_TABLE),
+			nil, leaves, nil, true)
+	}
 }
 
 func (m *processor) ProcessMatchTerminate(ctx context.Context,

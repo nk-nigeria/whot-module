@@ -11,7 +11,7 @@ type UseCase interface {
 	PlayCard(s *entity.MatchState, presence string, card *pb.Card) (entity.CardEffect, error)
 	DrawCardsFromDeck(s *entity.MatchState, userID string) (int, error)
 	ChooseWhotShape(s *entity.MatchState, userID string, shape pb.CardSuit) error
-	ChooseAutomaticWhotShape() *pb.Card
+	ChooseAutomaticWhotShape(s *entity.MatchState) *pb.Card
 	HandleGeneralMarket(s *entity.MatchState, userID string) error
 	FindPlayableCard(s *entity.MatchState, userId string) *pb.Card
 	GetPlayerCardCounts(s *entity.MatchState) map[string]int32

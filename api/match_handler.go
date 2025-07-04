@@ -17,7 +17,6 @@ package api
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/heroiclabs/nakama-common/runtime"
 	pb1 "github.com/nk-nigeria/cgp-common/proto"
@@ -48,7 +47,6 @@ func (m *MatchHandler) MatchSignal(ctx context.Context, logger runtime.Logger, d
 }
 
 func NewMatchHandler(marshaler *proto.MarshalOptions, unmarshaler *proto.UnmarshalOptions) *MatchHandler {
-	fmt.Println("new match handler")
 	return &MatchHandler{
 		processor: processor.NewMatchProcessor(marshaler, unmarshaler, engine.NewWhotEngine()),
 		machine:   gsm.NewGameStateMachine(),
@@ -77,6 +75,9 @@ func (m *MatchHandler) MatchInit(ctx context.Context, logger runtime.Logger, db 
 	matchInfo.MaxSize = entity.MaxPresences
 	matchInfo.MockCodeCard = 0
 
+	matchState := entity.NewMatchState(matchInfo)
+	// matchInfo.Size = int32(matchState.Presences.Size())
+
 	logger.Info("match init: %+v", matchInfo)
 
 	matchJson, err := protojson.Marshal(matchInfo)
@@ -86,8 +87,6 @@ func (m *MatchHandler) MatchInit(ctx context.Context, logger runtime.Logger, db 
 	}
 
 	logger.Info("match init label= %s", string(matchJson))
-
-	matchState := entity.NewMatchState(matchInfo)
 
 	// fire idle event
 	procPkg := packager.NewProcessorPackage(&matchState, m.processor, logger, nil, nil, nil, nil, nil)

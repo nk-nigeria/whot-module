@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/heroiclabs/nakama-common/runtime"
 	"github.com/nk-nigeria/whot-module/entity"
@@ -69,6 +70,11 @@ func (m *MatchHandler) MatchJoin(ctx context.Context, logger runtime.Logger, db 
 	logger.Info("match join, state=%v, presences=%v", s, presences)
 
 	m.processor.ProcessPresencesJoin(ctx, logger, nk, db, dispatcher, s, presences)
+
+	// If we're in matching state, reset the countdown
+	if m.machine.IsMatchingState() {
+		s.SetUpCountDown(10 * time.Second)
+	}
 	return s
 }
 
@@ -77,10 +83,13 @@ func (m *MatchHandler) MatchLeave(ctx context.Context, logger runtime.Logger, db
 
 	logger.Info("match leave, state=%v, presences=%v", s, presences)
 
-	if m.machine.IsPlayingState() || m.machine.IsReward() {
+	if m.machine.IsPreparingState() || m.machine.IsPlayingState() || m.machine.IsReward() {
 		m.processor.ProcessPresencesLeavePending(ctx, logger, nk, dispatcher, s, presences)
 		return s
 	}
 	m.processor.ProcessPresencesLeave(ctx, logger, nk, db, dispatcher, s, presences)
+	if m.machine.IsMatchingState() {
+		s.SetUpCountDown(10 * time.Second)
+	}
 	return s
 }

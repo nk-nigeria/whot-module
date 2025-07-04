@@ -164,6 +164,7 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 
 	if len(playerCards.Cards) == 0 {
 		s.WinnerId = userId
+		s.CurrentEffect = entity.EffectNone
 		s.EffectTarget = ""
 		s.PickPenalty = 0
 		s.IsEndingGame = true
@@ -261,22 +262,43 @@ func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.Card 
 	// 2. Ưu tiên lá bài có cùng suit
 	// 3. Nếu có lá Whot (joker), chọn Whot
 
+	var bestSameRankCard *pb.Card
+	var bestSameSuitCard *pb.Card
+	var bestWhotCard *pb.Card
+
 	for _, card := range userCards.Cards {
+		// 1. Lá cùng Rank
 		if card.Rank == topCard.Rank {
-			return card
+			if bestSameRankCard == nil || card.Rank > bestSameRankCard.Rank {
+				bestSameRankCard = card
+			}
+			continue
 		}
-	}
 
-	for _, card := range userCards.Cards {
+		// 2. Lá cùng Suit (trừ khi đang có hiệu ứng Pick)
 		if card.Suit == topCard.Suit && s.CurrentEffect != entity.EffectPickTwo && s.CurrentEffect != entity.EffectPickThree {
-			return card
+			if bestSameSuitCard == nil || card.Rank > bestSameSuitCard.Rank {
+				bestSameSuitCard = card
+			}
+			continue
+		}
+
+		// 3. Lá WHOT (Rank 20)
+		if card.Rank == pb.CardRank_RANK_20 && s.CurrentEffect != entity.EffectPickTwo && s.CurrentEffect != entity.EffectPickThree {
+			if bestWhotCard == nil {
+				bestWhotCard = card // chỉ cần 1 lá Whot là đủ
+			}
 		}
 	}
 
-	for _, card := range userCards.Cards {
-		if card.Rank == pb.CardRank_RANK_20 && s.CurrentEffect != entity.EffectPickTwo && s.CurrentEffect != entity.EffectPickThree {
-			return card
-		}
+	if bestSameRankCard != nil {
+		return bestSameRankCard
+	}
+	if bestSameSuitCard != nil {
+		return bestSameSuitCard
+	}
+	if bestWhotCard != nil {
+		return bestWhotCard
 	}
 	return nil
 }
@@ -382,20 +404,51 @@ func (e *Engine) isValidPlay(playedCard, topCard entity.Card) bool {
 	return false
 }
 
-func (e *Engine) ChooseAutomaticWhotShape() *pb.Card {
-	// Phương án 1: Chọn shape ngẫu nhiên
-	shapes := []pb.CardSuit{
-		pb.CardSuit_SUIT_CIRCLE,
-		pb.CardSuit_SUIT_SQUARE,
-		pb.CardSuit_SUIT_TRIANGLE,
-		pb.CardSuit_SUIT_STAR,
-		pb.CardSuit_SUIT_CROSS,
+func (e *Engine) ChooseAutomaticWhotShape(s *entity.MatchState) *pb.Card {
+
+	userId := s.CurrentTurn
+
+	userCards := s.Cards[userId]
+	if userCards == nil || len(userCards.Cards) == 0 {
+		return nil
 	}
-	randomIndex := rand.Intn(len(shapes))
+
+	suitCount := make(map[pb.CardSuit]int)
+
+	// Đếm số lượng mỗi Suit (bỏ qua WHOT)
+	for _, card := range userCards.Cards {
+		if card.Rank == pb.CardRank_RANK_20 {
+			continue
+		}
+		suitCount[card.Suit]++
+	}
+
+	// Tìm Suit có nhiều lá nhất
+	bestSuit := pb.CardSuit_SUIT_UNSPECIFIED
+	maxCount := -1
+	for suit, count := range suitCount {
+		if count > maxCount {
+			bestSuit = suit
+			maxCount = count
+		}
+	}
+
+	// Phương án : Chọn shape ngẫu nhiên
+	if bestSuit == pb.CardSuit_SUIT_UNSPECIFIED {
+		shapes := []pb.CardSuit{
+			pb.CardSuit_SUIT_CIRCLE,
+			pb.CardSuit_SUIT_SQUARE,
+			pb.CardSuit_SUIT_TRIANGLE,
+			pb.CardSuit_SUIT_STAR,
+			pb.CardSuit_SUIT_CROSS,
+		}
+		randomIndex := rand.Intn(len(shapes))
+		bestSuit = shapes[randomIndex]
+	}
 
 	return &pb.Card{
 		Rank: pb.CardRank_RANK_20,
-		Suit: shapes[randomIndex],
+		Suit: bestSuit,
 	}
 }
 

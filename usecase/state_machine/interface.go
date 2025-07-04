@@ -11,6 +11,8 @@ type UseCase interface {
 	FireProcessEvent(ctx context.Context, args ...interface{}) error
 	MustState() stateless.State
 	GetPbState() pb.GameState
+	IsMatchingState() bool
+	IsPreparingState() bool
 	IsPlayingState() bool
 	IsReward() bool
 	Trigger(ctx context.Context, trigger stateless.Trigger, args ...interface{}) error

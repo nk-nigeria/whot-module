@@ -34,10 +34,10 @@ const (
 
 const (
 	idleTimeout      = time.Second * 30 // Thời gian chờ không có người chơi vào bàn
-	matchingTimeout  = time.Second * 5  // Thời gian chờ đủ người chơi vào bàn
-	preparingTimeout = time.Second * 5  // Thời gian chờ đếm ngược và chuẩn bị bắt đầu ván chơi
+	matchingTimeout  = time.Second * 10 // Thời gian chờ đủ người chơi vào bàn
+	preparingTimeout = time.Second * 10 // Thời gian chờ đếm ngược và chuẩn bị bắt đầu ván chơi
 	//playTimeout      = time.Second * 10
-	rewardTimeout = time.Second * 15 // Thời gian chờ tính điểm và trả thưởng cho người chơi
+	rewardTimeout = time.Second * 20 // Thời gian chờ tính điểm và trả thưởng cho người chơi
 )
 
 type Machine struct {
@@ -108,8 +108,7 @@ func (m *Machine) configure() {
 		OnExit(preparing.Exit).
 		InternalTransition(triggerProcess, preparing.Process).
 		Permit(triggerPreparingDone, statePlay).
-		Permit(triggerPreparingFailed, stateMatching).
-		Permit(triggerIdle, stateIdle)
+		Permit(triggerPreparingFailed, stateMatching)
 
 	// playing state: wait for all user show card or timeout =>
 	//  switch to reward
@@ -164,6 +163,14 @@ func NewGameStateMachine() UseCase {
 	gs.configure()
 
 	return gs
+}
+
+func (m *Machine) IsMatchingState() bool {
+	return m.MustState() == stateMatching
+}
+
+func (m *Machine) IsPreparingState() bool {
+	return m.MustState() == statePreparing
 }
 
 func (m *Machine) IsPlayingState() bool {

@@ -8,6 +8,7 @@ import (
 	"github.com/heroiclabs/nakama-common/runtime"
 	"github.com/nk-nigeria/cgp-common/bot"
 	"github.com/nk-nigeria/cgp-common/define"
+	"github.com/nk-nigeria/whot-module/conf"
 	"github.com/nk-nigeria/whot-module/constant"
 	"github.com/nk-nigeria/whot-module/entity"
 	"github.com/nk-nigeria/whot-module/message_queue"
@@ -22,11 +23,22 @@ const (
 	rpcIdGameList    = "list_game"
 	rpcIdFindMatch   = "find_match"
 	rpcIdCreateMatch = "create_match"
+	
+	// Bot config APIs
+	rpcGetBotConfig    = "get_bot_config"
+	rpcUpdateBotConfig = "update_bot_config"
 )
 
 // noinspection GoUnusedExportedFunction
 func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, initializer runtime.Initializer) error {
 	initStart := time.Now()
+	
+	// Khởi tạo bot config
+	conf.InitBotConfig()
+	if err := conf.LoadBotConfigFromDB(ctx, logger, db); err != nil {
+		logger.Warn("Failed to load bot config from database, using default config: %v", err)
+	}
+	
 	bot.LoadBotsInfo(ctx, nk, db)
 	marshaler := &proto.MarshalOptions{}
 	unmarshaler := &proto.UnmarshalOptions{
@@ -102,6 +114,14 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 	entity.BotLoader = bot.NewBotLoader(db, define.WhotGame.String(), 100000)
 
 	if err := api.RegisterSessionEvents(db, nk, initializer); err != nil {
+		return err
+	}
+
+	// Register bot config APIs
+	if err := initializer.RegisterRpc(rpcGetBotConfig, api.RpcGetBotConfig(marshaler, unmarshaler)); err != nil {
+		return err
+	}
+	if err := initializer.RegisterRpc(rpcUpdateBotConfig, api.RpcUpdateBotConfig(marshaler, unmarshaler)); err != nil {
 		return err
 	}
 

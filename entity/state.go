@@ -3,6 +3,7 @@ package entity
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -76,6 +77,8 @@ type MatchState struct {
 	CountDownReachTime time.Time
 	LastCountDown      int
 	GameState          pb.GameState
+
+	IsDoubleDecking bool // true nếu bàn chơi có double deck
 	// save balance result in state reward
 	// using for send noti to presence join in state reward
 	balanceResult   *pb.BalanceResult
@@ -93,21 +96,19 @@ func NewMatchState(label *pb1.Match) MatchState {
 		PresencesNoInteract: make(map[string]bool),
 		Cards:               make(map[string]*pb.ListCard),
 		TimeTurn:            10,
+		IsDoubleDecking:     false, // Mặc định là false, có thể được cập nhật sau khi khởi tạo
 		// balanceResult:       nil,
 	}
 
-	if bots, err := BotLoader.GetFreeBot(int(label.NumBot)); err != nil {
-		fmt.Printf("\r\n load bot failed %s  \r\n", err.Error())
-	} else {
-		m.Bots = bots
+	parsedData := struct {
+		IsDoubleDecking bool `json:"is_double_decking"`
+	}{}
+	if label.UserData != "" {
+		if err := json.Unmarshal([]byte(label.UserData), &parsedData); err == nil && parsedData.IsDoubleDecking {
+			m.IsDoubleDecking = true
+		}
 	}
 
-	for _, bot := range m.Bots {
-		m.Presences.Put(bot.GetUserId(), bot)
-		m.Label.Size += 1
-		fmt.Printf("\r\n add bot %s to match \r\n", bot.GetUserId())
-		// m.addOrderPresence(bot)
-	}
 	return m
 }
 
@@ -159,6 +160,7 @@ func (s *MatchState) GetPresenceNotBotSize() int {
 	s.Presences.Each(func(index any, value interface{}) {
 		presence, ok := value.(runtime.Presence)
 		if !ok {
+			log.GetLogger().Warn("Presence type assertion failed for user %v", value)
 			return
 		}
 		if BotLoader.IsBot(presence.GetUserId()) {
@@ -167,6 +169,26 @@ func (s *MatchState) GetPresenceNotBotSize() int {
 		count++
 	})
 	return count
+}
+
+func (s *MatchState) AddBotToMatch(numBot int) []runtime.Presence {
+	var result []runtime.Presence
+
+	// Lấy bot từ BotLoader
+	if bots, err := BotLoader.GetFreeBot(numBot); err != nil {
+		fmt.Printf("\r\n load bot failed %s  \r\n", err.Error())
+	} else {
+		s.Bots = bots
+	}
+
+	for _, bot := range s.Bots {
+		s.Presences.Put(bot.GetUserId(), bot) // bot là Presence
+		s.Label.Size += 1
+		result = append(result, bot) // append vào danh sách trả về
+		fmt.Printf("\r\n add bot %s to match \r\n", bot.GetUserId())
+	}
+
+	return result
 }
 
 func (s *MatchState) BuildPlayOrderFromDealer() {
@@ -227,7 +249,7 @@ func (s *MatchState) AddPresence(ctx context.Context, nk runtime.NakamaModule, d
 		m := NewMyPrecense(ctx, nk, db, presence)
 		log.GetLogger().Info("Add presence %s to match %s", m.DeviceID)
 		s.Presences.Put(presence.GetUserId(), m)
-		s.ResetUserNotInteract(presence.GetUserId())
+		s.SetUserNotInteract(presence.GetUserId(), false)
 	}
 }
 
@@ -308,7 +330,24 @@ func (s *MatchState) GetLastCountDown() int {
 }
 
 func (s *MatchState) IsNeedNotifyCountDown() bool {
-	return s.GetRemainCountDown() != s.LastCountDown || s.LastCountDown == -1
+	remainCountDown := s.GetRemainCountDown()
+	// Ensure we only notify when the countdown value actually changes
+	// This prevents sending duplicate countdown values
+	return remainCountDown != s.LastCountDown || s.LastCountDown == -1
+}
+
+// DebugCountDown returns debug information about the countdown state
+func (s *MatchState) DebugCountDown() map[string]interface{} {
+	remain := s.GetRemainCountDown()
+	currentTime := time.Now()
+	return map[string]interface{}{
+		"remainCountDown":    remain,
+		"lastCountDown":      s.LastCountDown,
+		"countDownReachTime": s.CountDownReachTime,
+		"currentTime":        currentTime,
+		"timeUntilReach":     s.CountDownReachTime.Sub(currentTime),
+		"needNotify":         s.IsNeedNotifyCountDown(),
+	}
 }
 
 func (s *MatchState) GetPresenceSize() int {
@@ -367,13 +406,8 @@ func (s *MatchState) GetLeavePresences() []runtime.Presence {
 	return presences
 }
 
-func (s *MatchState) ResetUserNotInteract(userId string) {
-	s.PresencesNoInteract[userId] = false
-}
-
-func (s *MatchState) SetUserNotInteract(userId string) {
-	log.GetLogger().Info("Set user %s not interact in match", userId)
-	s.PresencesNoInteract[userId] = true
+func (s *MatchState) SetUserNotInteract(userId string, isAutoPlay bool) {
+	s.PresencesNoInteract[userId] = isAutoPlay
 }
 
 func (s *MatchState) AddUserNotInteractToLeaves() {
@@ -387,4 +421,20 @@ func (s *MatchState) AddUserNotInteractToLeaves() {
 			len(listPrecense), strings.Join(listUserId, ","))
 		s.AddLeavePresence(listPrecense...)
 	}
+}
+
+// GetBotPresences returns all bot presences in the match
+func (s *MatchState) GetBotPresences() []runtime.Presence {
+	var botPresences []runtime.Presence
+	s.Presences.Each(func(key interface{}, value interface{}) {
+		presence, ok := value.(runtime.Presence)
+		if !ok {
+			log.GetLogger().Warn("Presence type assertion failed for user %v", value)
+			return
+		}
+		if BotLoader.IsBot(presence.GetUserId()) {
+			botPresences = append(botPresences, presence)
+		}
+	})
+	return botPresences
 }

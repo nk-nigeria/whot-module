@@ -52,10 +52,10 @@ func (s *StateIdle) Exit(_ context.Context, _ ...interface{}) error {
 }
 
 func (s *StateIdle) Process(ctx context.Context, args ...interface{}) error {
-	// log.GetLogger().Info("[idle] processing")
+	log.GetLogger().Info("[idle] processing")
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
 	state := procPkg.GetState()
-	// log.GetLogger().Info("state presences size %v", state.GetPresenceSize())
+	log.GetLogger().Info("state presences size %v, %v", state.GetPresenceSize(), state.GetPresenceNotBotSize())
 
 	if state.GetPresenceSize() > 0 && state.GetPresenceNotBotSize() > 0 {
 		s.Trigger(ctx, triggerMatching)
@@ -66,8 +66,6 @@ func (s *StateIdle) Process(ctx context.Context, args ...interface{}) error {
 		//s.Trigger(ctx, triggerFinish)
 		log.GetLogger().Info("[idle] idle timeout => exit")
 		return presenter.ErrGameFinish
-	} else {
-		// log.GetLogger().Debug("[idle] idle timeout remain %v", remain)
 	}
 
 	return nil

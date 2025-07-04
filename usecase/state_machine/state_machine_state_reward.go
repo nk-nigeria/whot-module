@@ -3,8 +3,10 @@ package state_machine
 import (
 	"context"
 
+	"github.com/nk-nigeria/whot-module/entity"
 	log "github.com/nk-nigeria/whot-module/pkg/log"
 	"github.com/nk-nigeria/whot-module/pkg/packager"
+	"github.com/nk-nigeria/whot-module/usecase/service"
 )
 
 type StateReward struct {
@@ -35,6 +37,41 @@ func (s *StateReward) Enter(ctx context.Context, _ ...interface{}) error {
 		procPkg.GetDispatcher(),
 		state)
 
+	// Check if bots should leave after game ends
+	botService := service.NewBotManagementService(procPkg.GetDb())
+	betAmount := int64(state.Label.GetMarkUnit())
+
+	// Get last game result (1 for win, -1 for lose, 0 for draw)
+	lastResult := 0 // Default to draw
+	if state.GetBalanceResult() != nil {
+		// Determine result based on balance - this is a simplified logic
+		// You can implement more sophisticated logic based on your game rules
+		balanceResult := state.GetBalanceResult()
+		if balanceResult.GetUpdates()[0].GetAmountChipAdd() > 0 {
+			lastResult = 1 // Win
+		} else {
+			lastResult = -1 // Lose
+		}
+		// If both are 0, it's a draw (lastResult = 0)
+	}
+
+	if botService.ShouldBotLeave(procPkg.GetContext(), betAmount, lastResult) {
+		log.GetLogger().Info("[reward] Bot leave triggered by rule after game end, result=%d", lastResult)
+		// Remove one bot from the match
+		botPresences := state.GetBotPresences()
+		if len(botPresences) > 0 {
+			// Remove the first bot
+			botToRemove := botPresences[0]
+			state.RemovePresence(botToRemove)
+			log.GetLogger().Info("[reward] Removed bot %s from match", botToRemove.GetUserId())
+
+			// Free the bot back to the pool
+			entity.BotLoader.FreeBot(botToRemove.GetUserId())
+		}
+	} else {
+		log.GetLogger().Info("[reward] No bot leave triggered, result=%d", lastResult)
+	}
+
 	return nil
 }
 
@@ -43,7 +80,7 @@ func (s *StateReward) Exit(ctx context.Context, _ ...interface{}) error {
 	// clear result
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
 	state := procPkg.GetState()
-	state.AddUserNotInteractToLeaves()
+	procPkg.GetProcessor().ProcessKickUserNotInterac(log.GetLogger(), procPkg.GetDispatcher(), state)
 	state.ResetMatch()
 	return nil
 }
