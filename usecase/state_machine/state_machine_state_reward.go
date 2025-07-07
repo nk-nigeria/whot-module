@@ -3,7 +3,6 @@ package state_machine
 import (
 	"context"
 
-	"github.com/nk-nigeria/whot-module/entity"
 	log "github.com/nk-nigeria/whot-module/pkg/log"
 	"github.com/nk-nigeria/whot-module/pkg/packager"
 	"github.com/nk-nigeria/whot-module/usecase/service"
@@ -38,7 +37,7 @@ func (s *StateReward) Enter(ctx context.Context, _ ...interface{}) error {
 		state)
 
 	// Check if bots should leave after game ends
-	botService := service.NewBotManagementService(procPkg.GetDb())
+	botIntegration := service.NewWhotBotIntegration(procPkg.GetDb())
 	betAmount := int64(state.Label.GetMarkUnit())
 
 	// Get last game result (1 for win, -1 for lose, 0 for draw)
@@ -55,7 +54,16 @@ func (s *StateReward) Enter(ctx context.Context, _ ...interface{}) error {
 		// If both are 0, it's a draw (lastResult = 0)
 	}
 
-	if botService.ShouldBotLeave(procPkg.GetContext(), betAmount, lastResult) {
+	// Update match state for bot decision
+	botIntegration.SetMatchState(
+		"", // matchID not needed for leave logic
+		betAmount,
+		state.GetPresenceSize(),
+		lastResult,
+		0, // activeTables
+	)
+
+	if botIntegration.GetBotHelper().ShouldBotLeave(procPkg.GetContext()) {
 		log.GetLogger().Info("[reward] Bot leave triggered by rule after game end, result=%d", lastResult)
 		// Remove one bot from the match
 		botPresences := state.GetBotPresences()
@@ -66,7 +74,7 @@ func (s *StateReward) Enter(ctx context.Context, _ ...interface{}) error {
 			log.GetLogger().Info("[reward] Removed bot %s from match", botToRemove.GetUserId())
 
 			// Free the bot back to the pool
-			entity.BotLoader.FreeBot(botToRemove.GetUserId())
+			botIntegration.GetBotHelper().FreeBot(botToRemove.GetUserId())
 		}
 	} else {
 		log.GetLogger().Info("[reward] No bot leave triggered, result=%d", lastResult)

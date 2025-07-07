@@ -6,7 +6,8 @@ import (
 	"encoding/json"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	"github.com/nk-nigeria/whot-module/conf"
+	"github.com/nk-nigeria/cgp-common/bot"
+	"github.com/nk-nigeria/whot-module/usecase/service"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -18,7 +19,9 @@ const (
 // RpcGetBotConfig lấy cấu hình bot hiện tại
 func RpcGetBotConfig(marshaler *proto.MarshalOptions, unmarshaler *proto.UnmarshalOptions) func(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, payload string) (string, error) {
 	return func(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, payload string) (string, error) {
-		config := conf.GetBotConfig()
+		// Get bot config from the new bot system
+		botIntegration := service.NewWhotBotIntegration(db)
+		config := botIntegration.GetBotHelper().GetBotConfig()
 
 		response := map[string]interface{}{
 			"success": true,
@@ -59,7 +62,7 @@ func RpcUpdateBotConfig(marshaler *proto.MarshalOptions, unmarshaler *proto.Unma
 			return "", err
 		}
 
-		var config conf.BotConfig
+		var config bot.BotConfig
 		if err := json.Unmarshal(configBytes, &config); err != nil {
 			logger.Error("Failed to unmarshal config: %v", err)
 			return "", err
@@ -71,14 +74,13 @@ func RpcUpdateBotConfig(marshaler *proto.MarshalOptions, unmarshaler *proto.Unma
 			return "", runtime.NewError("Invalid bot config: "+err.Error(), 3)
 		}
 
-		// Save to database
-		if err := conf.SaveBotConfigToDB(ctx, logger, db, &config); err != nil {
+		// Save to database using new bot system
+		botIntegration := service.NewWhotBotIntegration(db)
+		botIntegration.GetBotHelper().SetBotConfig(&config)
+		if err := botIntegration.SaveBotConfig(ctx); err != nil {
 			logger.Error("Failed to save bot config to database: %v", err)
 			return "", err
 		}
-
-		// Update in-memory config
-		conf.InitBotConfig()
 
 		response := map[string]interface{}{
 			"success": true,
@@ -96,7 +98,7 @@ func RpcUpdateBotConfig(marshaler *proto.MarshalOptions, unmarshaler *proto.Unma
 }
 
 // validateBotConfig kiểm tra tính hợp lệ của cấu hình bot
-func validateBotConfig(config *conf.BotConfig) error {
+func validateBotConfig(config *bot.BotConfig) error {
 	// Validate BotJoinRules
 	for i, rule := range config.BotJoinRules {
 		if rule.MinBet < 0 || rule.MaxBet < rule.MinBet {

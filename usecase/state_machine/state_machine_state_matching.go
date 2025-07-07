@@ -47,20 +47,23 @@ func (s *StateMatching) Enter(ctx context.Context, _ ...interface{}) error {
 
 	// Check bot join only if we haven't reached maximum players (4)
 	if state.GetPresenceSize() < entity.MaxPresences {
-		botService := service.NewBotManagementService(procPkg.GetDb())
-		betAmount := int64(state.Label.GetMarkUnit())
-		userCount := state.GetPresenceSize()
-		if botService.ShouldBotJoin(procPkg.GetContext(), betAmount, userCount) {
-			procPkg.GetLogger().Info("[matching] Bot join triggered by rule")
-			procPkg.GetProcessor().AddBotToMatch(
-				procPkg.GetContext(),
-				procPkg.GetLogger(),
-				procPkg.GetNK(),
-				procPkg.GetDb(),
-				procPkg.GetDispatcher(),
-				state,
-				1,
-			)
+		// Get match ID for context
+		matchID := procPkg.GetContext().Value("match_id").(string)
+
+		// Create bot integration and update match state
+		botIntegration := service.NewWhotBotIntegration(procPkg.GetDb())
+		botIntegration.SetMatchState(
+			matchID,
+			int64(state.Label.GetMarkUnit()),
+			state.GetPresenceSize(),
+			0, // lastResult
+			0, // activeTables
+		)
+
+		// Process bot logic
+		botCtx := packager.GetContextWithProcessorPackager(procPkg)
+		if err := botIntegration.ProcessBotLogic(botCtx); err != nil {
+			procPkg.GetLogger().Error("[matching] Bot logic error: %v", err)
 		}
 	} else {
 		procPkg.GetLogger().Info("[matching] Skip bot join - maximum players reached (%d)", entity.MaxPresences)
@@ -75,27 +78,30 @@ func (s *StateMatching) Exit(_ context.Context, _ ...interface{}) error {
 }
 
 func (s *StateMatching) Process(ctx context.Context, args ...interface{}) error {
-	// log.GetLogger().Info("[matching] processing")
+	log.GetLogger().Info("[matching] processing - checking bot join")
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
 	state := procPkg.GetState()
 	remain := state.GetRemainCountDown()
 
 	// Check bot join only if we haven't reached maximum players (4)
 	if state.GetPresenceSize() < entity.MaxPresences {
-		botService := service.NewBotManagementService(procPkg.GetDb())
-		betAmount := int64(state.Label.GetMarkUnit())
-		userCount := state.GetPresenceSize()
-		if botService.ShouldBotJoin(procPkg.GetContext(), betAmount, userCount) {
-			procPkg.GetLogger().Info("[matching] Bot join triggered by rule (Process)")
-			procPkg.GetProcessor().AddBotToMatch(
-				procPkg.GetContext(),
-				procPkg.GetLogger(),
-				procPkg.GetNK(),
-				procPkg.GetDb(),
-				procPkg.GetDispatcher(),
-				state,
-				1,
-			)
+		// Get match ID for context
+		matchID := procPkg.GetContext().Value("match_id").(string)
+
+		// Create bot integration and update match state
+		botIntegration := service.NewWhotBotIntegration(procPkg.GetDb())
+		botIntegration.SetMatchState(
+			matchID,
+			int64(state.Label.GetMarkUnit()),
+			state.GetPresenceSize(),
+			0, // lastResult
+			0, // activeTables
+		)
+
+		// Process bot logic
+		botCtx := packager.GetContextWithProcessorPackager(procPkg)
+		if err := botIntegration.ProcessBotLogic(botCtx); err != nil {
+			procPkg.GetLogger().Error("[matching] Bot logic error: %v", err)
 		}
 	} else {
 		procPkg.GetLogger().Info("[matching] Skip bot join - maximum players reached (%d)", entity.MaxPresences)

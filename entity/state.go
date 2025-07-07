@@ -174,10 +174,13 @@ func (s *MatchState) GetPresenceNotBotSize() int {
 func (s *MatchState) AddBotToMatch(numBot int) []runtime.Presence {
 	var result []runtime.Presence
 
+	fmt.Printf("[DEBUG] AddBotToMatch called with numBot=%d\n", numBot)
+
 	// Lấy bot từ BotLoader
 	if bots, err := BotLoader.GetFreeBot(numBot); err != nil {
-		fmt.Printf("\r\n load bot failed %s  \r\n", err.Error())
+		fmt.Printf("[ERROR] Load bot failed: %s\n", err.Error())
 	} else {
+		fmt.Printf("[DEBUG] Successfully loaded %d bots from BotLoader\n", len(bots))
 		s.Bots = bots
 	}
 
@@ -185,9 +188,10 @@ func (s *MatchState) AddBotToMatch(numBot int) []runtime.Presence {
 		s.Presences.Put(bot.GetUserId(), bot) // bot là Presence
 		s.Label.Size += 1
 		result = append(result, bot) // append vào danh sách trả về
-		fmt.Printf("\r\n add bot %s to match \r\n", bot.GetUserId())
+		fmt.Printf("[DEBUG] Added bot %s to match\n", bot.GetUserId())
 	}
 
+	fmt.Printf("[DEBUG] AddBotToMatch completed, total bots added: %d\n", len(result))
 	return result
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -404,8 +405,11 @@ func (m *processor) AddBotToMatch(ctx context.Context, logger runtime.Logger, nk
 		return nil
 	}
 	bJoin := s.AddBotToMatch(count)
-	m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, bJoin, nil)
-	return nil
+	if len(bJoin) > 0 {
+		m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, bJoin, nil)
+		return nil
+	}
+	return fmt.Errorf("no bot join")
 }
 
 func (m *processor) broadcastMessage(logger runtime.Logger, dispatcher runtime.MatchDispatcher, opCode int64, data proto.Message, presences []runtime.Presence, sender runtime.Presence, reliable bool) error {
