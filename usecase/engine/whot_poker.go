@@ -94,6 +94,11 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 		return entity.EffectNone, errors.New("not user's turn")
 	}
 
+	// Check if this is the second card in double decking
+	if s.IsDoubleDecking && s.DoubleDeckingEnabled && s.DoubleDeckingPlayer == userId && s.DoubleDeckingCount == 1 {
+		return e.playSecondCard(s, userId, card)
+	}
+
 	playerCards, ok := s.Cards[userId]
 	if !ok {
 		log.GetLogger().Error("player cards not found")
@@ -125,34 +130,57 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 	switch card.GetRank() {
 	case pb.CardRank_RANK_1: // 1
 		effect = entity.EffectHoldOn
+		// Reset double decking for function cards
+		s.DoubleDeckingEnabled = false
+		s.DoubleDeckingPlayer = ""
+		s.DoubleDeckingCount = 0
 
 	case pb.CardRank_RANK_2: // 2
 		effect = entity.EffectPickTwo
 		s.PickPenalty += 2
 		s.EffectTarget = s.GetNextPlayerClockwise(userId)
 		s.CurrentTurn = s.EffectTarget
+		// Reset double decking for function cards
+		s.DoubleDeckingEnabled = false
+		s.DoubleDeckingPlayer = ""
+		s.DoubleDeckingCount = 0
 
 	case pb.CardRank_RANK_5: // 5
 		effect = entity.EffectPickThree
 		s.PickPenalty += 3
 		s.EffectTarget = s.GetNextPlayerClockwise(userId)
 		s.CurrentTurn = s.EffectTarget
+		// Reset double decking for function cards
+		s.DoubleDeckingEnabled = false
+		s.DoubleDeckingPlayer = ""
+		s.DoubleDeckingCount = 0
 
 	case pb.CardRank_RANK_8: // 8
 		effect = entity.EffectSuspension
 		nextPlayer := s.GetNextPlayerClockwise(userId)
 		s.EffectTarget = nextPlayer
 		s.CurrentTurn = s.GetNextPlayerClockwise(nextPlayer)
+		// Reset double decking for function cards
+		s.DoubleDeckingEnabled = false
+		s.DoubleDeckingPlayer = ""
+		s.DoubleDeckingCount = 0
 
 	case pb.CardRank_RANK_14: // 14
 		effect = entity.EffectGeneralMarket
+		// Reset double decking for function cards
+		s.DoubleDeckingEnabled = false
+		s.DoubleDeckingPlayer = ""
+		s.DoubleDeckingCount = 0
 
 	case pb.CardRank_RANK_20: // 20
 		fmt.Printf("Whot card played by %s\n", userId)
 		effect = entity.EffectWhot
 		s.WaitingForWhotShape = true
+		// Reset double decking for function cards
+		s.DoubleDeckingEnabled = false
+		s.DoubleDeckingPlayer = ""
+		s.DoubleDeckingCount = 0
 	default:
-		s.CurrentTurn = s.GetNextPlayerClockwise(userId)
 	}
 
 	s.TopCard = card
@@ -168,8 +196,41 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 		s.EffectTarget = ""
 		s.PickPenalty = 0
 		s.IsEndingGame = true
+		// Reset double decking state
+		s.DoubleDeckingEnabled = false
+		s.DoubleDeckingPlayer = ""
+		s.DoubleDeckingCount = 0
 		log.GetLogger().Info("Player %s has won the game by playing the last card", userId)
 		return entity.EffectNone, nil
+	}
+
+	// Double decking logic
+	if s.IsDoubleDecking {
+		// Check if this is a function card
+		if e.isFunctionCard(card) {
+			// Function card - next turn immediately, no double decking
+			// Double decking state already reset in switch statement above
+		} else {
+			// Regular card - check if can play double
+			if e.CheckDoubleDeckingEligibility(s, userId) {
+				s.DoubleDeckingEnabled = true
+				s.DoubleDeckingPlayer = userId
+				s.DoubleDeckingCount = 1
+				s.CurrentTurn = userId // Keep turn for second card
+				log.GetLogger().Info("Double decking enabled for player %s", userId)
+			} else {
+				// No more playable cards, next turn
+				s.DoubleDeckingEnabled = false
+				s.DoubleDeckingPlayer = ""
+				s.DoubleDeckingCount = 0
+				s.CurrentTurn = s.GetNextPlayerClockwise(userId)
+			}
+		}
+	} else {
+		// Normal game - next turn
+		if s.CurrentEffect == entity.EffectNone {
+			s.CurrentTurn = s.GetNextPlayerClockwise(userId)
+		}
 	}
 
 	return effect, nil
@@ -266,7 +327,17 @@ func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.Card 
 	var bestSameSuitCard *pb.Card
 	var bestWhotCard *pb.Card
 
+	// Kiểm tra xem có đang trong trạng thái double decking không
+	isDoubleDecking := s.IsDoubleDecking && s.DoubleDeckingCount == 1
+
 	for _, card := range userCards.Cards {
+		// Khi đang double decking, lá thứ 2 phải là lá thường (không phải lá chức năng)
+		if isDoubleDecking {
+			if e.isFunctionCard(card) {
+				continue
+			}
+		}
+
 		// 1. Lá cùng Rank
 		if card.Rank == topCard.Rank {
 			if bestSameRankCard == nil || card.Rank > bestSameRankCard.Rank {
@@ -465,4 +536,123 @@ func (e *Engine) GetPlayerCardCounts(s *entity.MatchState) map[string]int32 {
 
 func (e *Engine) GetDeckCount() int32 {
 	return int32(e.deck.RemainingCards())
+}
+
+// CheckDoubleDeckingEligibility checks if a player can play double decking
+func (e *Engine) CheckDoubleDeckingEligibility(s *entity.MatchState, userId string) bool {
+	if !s.IsDoubleDecking {
+		return false
+	}
+
+	// Check if player has more playable regular cards
+	playableCards := e.GetPlayableCardsForDouble(s, userId)
+	return len(playableCards) > 0
+}
+
+// GetPlayableCardsForDouble returns cards that can be played in double decking
+func (e *Engine) GetPlayableCardsForDouble(s *entity.MatchState, userId string) []*pb.Card {
+	var playableCards []*pb.Card
+
+	playerCards, ok := s.Cards[userId]
+	if !ok {
+		return playableCards
+	}
+
+	topCard := s.TopCard
+	if topCard == nil {
+		return playableCards
+	}
+
+	for _, card := range playerCards.Cards {
+		// Skip function cards
+		if e.isFunctionCard(card) {
+			continue
+		}
+
+		// Check if card is playable (same rank or same suit)
+		playedEntityCard := entity.NewCardFromPb(card.GetRank(), card.GetSuit())
+		topEntityCard := entity.NewCardFromPb(topCard.GetRank(), topCard.GetSuit())
+
+		if e.isValidPlay(playedEntityCard, topEntityCard) {
+			playableCards = append(playableCards, card)
+		}
+	}
+
+	return playableCards
+}
+
+// isFunctionCard checks if a card is a function card (not allowed in double decking)
+func (e *Engine) isFunctionCard(card *pb.Card) bool {
+	switch card.GetRank() {
+	case pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_5,
+		pb.CardRank_RANK_8, pb.CardRank_RANK_14, pb.CardRank_RANK_20:
+		return true
+	default:
+		return false
+	}
+}
+
+func (e *Engine) playSecondCard(s *entity.MatchState, userId string, card *pb.Card) (entity.CardEffect, error) {
+	playerCards, ok := s.Cards[userId]
+	if !ok {
+		log.GetLogger().Error("player cards not found")
+		return entity.EffectNone, errors.New("player cards not found")
+	}
+
+	found := false
+	cardIndex := -1
+	for i, c := range playerCards.Cards {
+		if c.GetRank() == card.GetRank() && c.GetSuit() == card.GetSuit() {
+			found = true
+			cardIndex = i
+			break
+		}
+	}
+	if !found {
+		log.GetLogger().Error("card not in player's hand")
+		return entity.EffectNone, errors.New("card not in player's hand")
+	}
+
+	playedEntityCard := entity.NewCardFromPb(card.GetRank(), card.GetSuit())
+	topEntityCard := entity.NewCardFromPb(s.TopCard.GetRank(), s.TopCard.GetSuit())
+	if !e.isValidPlay(playedEntityCard, topEntityCard) {
+		return entity.EffectNone, errors.New("invalid card played")
+	}
+
+	// Second card must be a regular card (not function card)
+	if e.isFunctionCard(card) {
+		return entity.EffectNone, errors.New("function cards not allowed as second card in double decking")
+	}
+
+	// Update top card and increment count
+	s.TopCard = card
+	s.DoubleDeckingCount = 2
+
+	// Xóa lá bài đã đánh khỏi bài của người chơi
+	playerCards.Cards = append(playerCards.Cards[:cardIndex], playerCards.Cards[cardIndex+1:]...)
+	s.Cards[userId] = playerCards
+
+	if len(playerCards.Cards) == 0 {
+		s.WinnerId = userId
+		s.CurrentEffect = entity.EffectNone
+		s.EffectTarget = ""
+		s.PickPenalty = 0
+		s.IsEndingGame = true
+		// Reset double decking state
+		s.DoubleDeckingEnabled = false
+		s.DoubleDeckingPlayer = ""
+		s.DoubleDeckingCount = 0
+		log.GetLogger().Info("Player %s has won the game by playing the last card", userId)
+		return entity.EffectNone, nil
+	}
+
+	// Double decking completed - move to next player
+	s.DoubleDeckingEnabled = false
+	s.DoubleDeckingPlayer = ""
+	s.DoubleDeckingCount = 0
+	s.CurrentTurn = s.GetNextPlayerClockwise(userId)
+	s.CurrentEffect = entity.EffectNone
+
+	log.GetLogger().Info("Double decking completed for player %s, moving to next player", userId)
+	return entity.EffectNone, nil
 }

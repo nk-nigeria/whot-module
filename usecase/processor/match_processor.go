@@ -20,6 +20,7 @@ import (
 	"github.com/nk-nigeria/whot-module/entity"
 	"github.com/nk-nigeria/whot-module/message_queue"
 	"github.com/nk-nigeria/whot-module/usecase/engine"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -405,8 +406,20 @@ func (m *processor) AddBotToMatch(ctx context.Context, logger runtime.Logger, nk
 		return nil
 	}
 	bJoin := s.AddBotToMatch(count)
+
 	if len(bJoin) > 0 {
+		listUserId := make([]string, 0, len(bJoin))
+		for _, p := range bJoin {
+			listUserId = append(listUserId, p.GetUserId())
+		}
+		m.emitNkEvent(ctx, define.NakEventMatchJoin, nk, listUserId, s)
 		m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, bJoin, nil)
+		matchJson, err := protojson.Marshal(s.Label)
+		if err != nil {
+			logger.Error("update json label failed ", err)
+			return nil
+		}
+		dispatcher.MatchLabelUpdate(string(matchJson))
 		return nil
 	}
 	return fmt.Errorf("no bot join")
@@ -925,13 +938,6 @@ func (m *processor) emitNkEvent(ctx context.Context, eventNk define.NakEvent, nk
 	gameCode := entity.ModuleName
 	endMatchUnix := strconv.FormatInt(time.Now().Unix(), 10)
 	mcbValue := strconv.FormatInt(int64(s.Label.Bet.GetMarkUnit()), 10)
-
-	if eventNk == define.NakEventMatchLeave || eventNk == define.NakEventMatchEnd {
-		matchId = ""
-		gameCode = ""
-		endMatchUnix = ""
-		mcbValue = ""
-	}
 
 	nk.Event(ctx, &api.Event{
 		Name:      string(eventNk),

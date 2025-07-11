@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/nk-nigeria/cgp-common/bot"
+	"github.com/nk-nigeria/whot-module/entity"
 	"github.com/nk-nigeria/whot-module/pkg/packager"
 )
 
@@ -32,17 +33,18 @@ func NewWhotBotIntegration(db *sql.DB) *WhotBotIntegration {
 	}
 
 	integration.botHelper = bot.NewBotIntegrationHelper(db, integration)
+	integration.LoadBotConfig(context.Background())
 	return integration
 }
 
 // GetGameCode returns the game code for Whot
 func (w *WhotBotIntegration) GetGameCode() string {
-	return "whot"
+	return entity.ModuleName
 }
 
 // GetMinChipBalance returns minimum chip balance for bots
 func (w *WhotBotIntegration) GetMinChipBalance() int64 {
-	return 100000 // 100k chips minimum
+	return 75000 // 75k chips minimum
 }
 
 // GetMatchInfo returns current match information

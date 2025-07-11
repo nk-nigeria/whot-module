@@ -79,6 +79,10 @@ type MatchState struct {
 	GameState          pb.GameState
 
 	IsDoubleDecking bool // true nếu bàn chơi có double deck
+	// Double Decking state tracking
+	DoubleDeckingEnabled bool   // true nếu đang trong trạng thái có thể đánh double
+	DoubleDeckingPlayer  string // userId của người chơi đang có thể đánh double
+	DoubleDeckingCount   int    // số lá đã đánh trong lượt double (0, 1, hoặc 2)
 	// save balance result in state reward
 	// using for send noti to presence join in state reward
 	balanceResult   *pb.BalanceResult
@@ -153,6 +157,10 @@ func (s *MatchState) ResetMatch() {
 	s.CurrentEffect = EffectNone
 	s.WaitingForWhotShape = false
 	s.IsEndingGame = false
+	// Reset double decking state
+	s.DoubleDeckingEnabled = false
+	s.DoubleDeckingPlayer = ""
+	s.DoubleDeckingCount = 0
 }
 
 func (s *MatchState) GetPresenceNotBotSize() int {
@@ -186,7 +194,7 @@ func (s *MatchState) AddBotToMatch(numBot int) []runtime.Presence {
 
 	for _, bot := range s.Bots {
 		s.Presences.Put(bot.GetUserId(), bot) // bot là Presence
-		s.Label.Size += 1
+		s.Label.NumBot += 1
 		result = append(result, bot) // append vào danh sách trả về
 		fmt.Printf("[DEBUG] Added bot %s to match\n", bot.GetUserId())
 	}
