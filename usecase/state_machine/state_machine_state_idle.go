@@ -65,6 +65,7 @@ func (s *StateIdle) Process(ctx context.Context, args ...interface{}) error {
 		// Do finish here
 		//s.Trigger(ctx, triggerFinish)
 		log.GetLogger().Info("[idle] idle timeout => exit")
+		procPkg.GetProcessor().ProcessMatchTerminate(ctx, procPkg.GetLogger(), procPkg.GetNK(), procPkg.GetDb(), procPkg.GetDispatcher(), state)
 		return presenter.ErrGameFinish
 	}
 

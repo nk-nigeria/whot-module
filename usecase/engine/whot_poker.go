@@ -415,7 +415,9 @@ func (e *Engine) Finish(s *entity.MatchState) *pb.UpdateFinish {
 		winFactorPerWinner = numLosers / numWinners
 	}
 
-	// 4. Gán kết quả cho từng người chơi
+	// 4. Gán kết quả cho từng người chơi và tính toán lastResult cho bot
+	s.BotResults = make(map[string]int) // Initialize BotResults map
+
 	for uid, total := range playerScores {
 		isWinner := false
 		for _, w := range winners {
@@ -430,6 +432,17 @@ func (e *Engine) Finish(s *entity.MatchState) *pb.UpdateFinish {
 			winFactor = winFactorPerWinner
 		} else {
 			winFactor = -1.0
+		}
+
+		// Tính toán lastResult cho bot
+		if entity.BotLoader.IsBot(uid) {
+			var lastResult int
+			if isWinner {
+				lastResult = 1 // Win
+			} else {
+				lastResult = -1 // Lose
+			}
+			s.BotResults[uid] = lastResult
 		}
 
 		updateFinish.Results = append(updateFinish.Results, &pb.WhotPlayerResult{

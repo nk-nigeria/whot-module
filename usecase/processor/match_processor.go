@@ -128,6 +128,10 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 	var userID string
 	payload := &pb.Card{}
 
+	if s.WaitingForWhotShape {
+		return
+	}
+
 	if message == nil {
 		userID = s.CurrentTurn
 		payload = m.engine.FindPlayableCard(s, userID)
@@ -362,12 +366,6 @@ func (m *processor) HandleAutoPlay(logger runtime.Logger, dispatcher runtime.Mat
 func (m *processor) ProcessFinishGame(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule, db *sql.DB, dispatcher runtime.MatchDispatcher, s *entity.MatchState) {
 
 	logger.Info("process finish game")
-	pbGameState := pb.UpdateGameState{
-		State:     pb.GameState_GameStateReward,
-		CountDown: int64(s.GetRemainCountDown()),
-	}
-	m.NotifyUpdateGameState(s, logger, dispatcher, &pbGameState)
-
 	// update finish
 	updateFinish := m.engine.Finish(s)
 
@@ -390,6 +388,7 @@ func (m *processor) ProcessFinishGame(ctx context.Context, logger runtime.Logger
 			Error("calc reward failed")
 		return
 	}
+	s.SetBalanceResult(balanceResult)
 
 	m.updateChipByResultGameFinish(ctx, logger, nk, balanceResult) // summary balance user
 
@@ -423,6 +422,37 @@ func (m *processor) AddBotToMatch(ctx context.Context, logger runtime.Logger, nk
 		return nil
 	}
 	return fmt.Errorf("no bot join")
+}
+
+func (m *processor) RemoveBotFromMatch(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule, db *sql.DB, dispatcher runtime.MatchDispatcher, s *entity.MatchState, botUserID string) error {
+	logger.Info("RemoveBotFromMatch %s", botUserID)
+	if botUserID == "" {
+		return nil
+	}
+
+	err, botPresence := s.RemoveBotFromMatch(botUserID)
+	if err != nil {
+		return err
+	}
+
+	// Emit leave event
+	listUserId := []string{botUserID}
+	m.emitNkEvent(ctx, define.NakEventMatchLeave, nk, listUserId, s)
+
+	// Notify table update
+	leavePresences := []runtime.Presence{botPresence}
+	m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, nil, leavePresences)
+
+	// Update match label
+	matchJson, err := protojson.Marshal(s.Label)
+	if err != nil {
+		logger.Error("update json label failed ", err)
+		return nil
+	}
+	dispatcher.MatchLabelUpdate(string(matchJson))
+
+	logger.Info("Bot %s removed from match", botUserID)
+	return nil
 }
 
 func (m *processor) broadcastMessage(logger runtime.Logger, dispatcher runtime.MatchDispatcher, opCode int64, data proto.Message, presences []runtime.Presence, sender runtime.Presence, reliable bool) error {

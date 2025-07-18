@@ -6,8 +6,12 @@ import (
 
 	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 	"github.com/nk-nigeria/whot-module/pkg/packager"
+	"github.com/nk-nigeria/whot-module/usecase/service"
 	"github.com/qmuntal/stateless"
 )
+
+// Global variable to store botIntegration for sharing between states
+var sharedBotIntegration *service.WhotBotIntegration
 
 const (
 	stateInit      = "Init"      // Khởi tạo
@@ -37,7 +41,7 @@ const (
 	matchingTimeout  = time.Second * 10 // Thời gian chờ đủ người chơi vào bàn
 	preparingTimeout = time.Second * 10 // Thời gian chờ đếm ngược và chuẩn bị bắt đầu ván chơi
 	//playTimeout      = time.Second * 10
-	rewardTimeout = time.Second * 20 // Thời gian chờ tính điểm và trả thưởng cho người chơi
+	rewardTimeout = time.Second * 25 // Thời gian chờ tính điểm và trả thưởng cho người chơi
 )
 
 type Machine struct {
@@ -187,6 +191,16 @@ func (m *Machine) Trigger(ctx context.Context, trigger stateless.Trigger, args .
 
 func (m *Machine) TriggerIdle(ctx context.Context, args ...interface{}) error {
 	return m.state.FireCtx(ctx, triggerIdle, args...)
+}
+
+// GetGlobalBotIntegration returns the global bot integration instance
+func GetGlobalBotIntegration() *service.WhotBotIntegration {
+	return sharedBotIntegration
+}
+
+// SetGlobalBotIntegration sets the global bot integration instance
+func SetGlobalBotIntegration(botIntegration *service.WhotBotIntegration) {
+	sharedBotIntegration = botIntegration
 }
 
 type FireFn func(ctx context.Context, trigger stateless.Trigger, args ...interface{}) error

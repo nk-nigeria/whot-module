@@ -45,24 +45,27 @@ func (s *StateMatching) Enter(ctx context.Context, _ ...interface{}) error {
 		},
 	)
 
-	// Check bot join only if we haven't reached maximum players (4)
-	if state.GetPresenceSize() < entity.MaxPresences {
-		// Get match ID for context
-		matchID := procPkg.GetContext().Value("match_id").(string)
+	// Create bot integration instance once during state enter
+	botIntegration := service.NewWhotBotIntegration(procPkg.GetDb())
 
-		// Create bot integration and update match state
-		botIntegration := service.NewWhotBotIntegration(procPkg.GetDb())
+	// Store in global variable for preparing state to use
+	SetGlobalBotIntegration(botIntegration)
+
+	// Step 1: Make initial bot join decision (only once)
+	if state.GetPresenceSize() < entity.MaxPresences {
+		// Update match state
 		botIntegration.SetMatchState(
-			matchID,
+			"",
 			int64(state.Label.GetMarkUnit()),
 			state.GetPresenceSize(),
 			0, // lastResult
 			0, // activeTables
 		)
 
-		// Process bot logic
+		// Make initial bot join decision (random once)
 		botCtx := packager.GetContextWithProcessorPackager(procPkg)
-		if err := botIntegration.ProcessBotLogic(botCtx); err != nil {
+		log.GetLogger().Info("[matching] Making initial bot join decision")
+		if err := botIntegration.ProcessJoinBotLogic(botCtx); err != nil {
 			procPkg.GetLogger().Error("[matching] Bot logic error: %v", err)
 		}
 	} else {
@@ -83,25 +86,15 @@ func (s *StateMatching) Process(ctx context.Context, args ...interface{}) error 
 	state := procPkg.GetState()
 	remain := state.GetRemainCountDown()
 
-	// Check bot join only if we haven't reached maximum players (4)
+	// Step 2: Check and join bots based on time (continuously)
 	if state.GetPresenceSize() < entity.MaxPresences {
-		// Get match ID for context
-		matchID := procPkg.GetContext().Value("match_id").(string)
-
-		// Create bot integration and update match state
-		botIntegration := service.NewWhotBotIntegration(procPkg.GetDb())
-		botIntegration.SetMatchState(
-			matchID,
-			int64(state.Label.GetMarkUnit()),
-			state.GetPresenceSize(),
-			0, // lastResult
-			0, // activeTables
-		)
-
-		// Process bot logic
+		// Check if bot should join based on time
 		botCtx := packager.GetContextWithProcessorPackager(procPkg)
-		if err := botIntegration.ProcessBotLogic(botCtx); err != nil {
-			procPkg.GetLogger().Error("[matching] Bot logic error: %v", err)
+		joined, err := GetGlobalBotIntegration().CheckAndJoinExpiredBots(botCtx)
+		if err != nil {
+			procPkg.GetLogger().Error("[matching] Bot join error: %v", err)
+		} else if joined {
+			procPkg.GetLogger().Info("[matching] Bot joined based on time")
 		}
 	} else {
 		procPkg.GetLogger().Info("[matching] Skip bot join - maximum players reached (%d)", entity.MaxPresences)

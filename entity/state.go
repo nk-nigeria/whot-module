@@ -60,6 +60,8 @@ type MatchState struct {
 
 	//bot
 	Bots []*bot.BotPresence
+	// Create a map to store individual bot results
+	BotResults map[string]int
 	// BotLogic *BotLogic
 
 	// The top card on the table.
@@ -161,6 +163,8 @@ func (s *MatchState) ResetMatch() {
 	s.DoubleDeckingEnabled = false
 	s.DoubleDeckingPlayer = ""
 	s.DoubleDeckingCount = 0
+	// Reset bot results
+	s.BotResults = make(map[string]int)
 }
 
 func (s *MatchState) GetPresenceNotBotSize() int {
@@ -201,6 +205,29 @@ func (s *MatchState) AddBotToMatch(numBot int) []runtime.Presence {
 
 	fmt.Printf("[DEBUG] AddBotToMatch completed, total bots added: %d\n", len(result))
 	return result
+}
+
+func (s *MatchState) RemoveBotFromMatch(botUserID string) (error, runtime.Presence) {
+	// Find the bot presence to remove
+	var botPresence runtime.Presence
+	s.Presences.Each(func(key interface{}, value interface{}) {
+		presence, ok := value.(runtime.Presence)
+		if ok && presence.GetUserId() == botUserID {
+			botPresence = presence
+		}
+	})
+
+	if botPresence == nil {
+		return fmt.Errorf("bot not found in match"), nil
+	}
+
+	// Remove bot from match
+	s.RemovePresence(botPresence)
+	s.Label.NumBot -= 1
+	// Free bot back to pool
+	BotLoader.FreeBot(botUserID)
+
+	return nil, botPresence
 }
 
 func (s *MatchState) BuildPlayOrderFromDealer() {

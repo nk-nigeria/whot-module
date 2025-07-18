@@ -32,7 +32,7 @@ func NewWhotBotIntegration(db *sql.DB) *WhotBotIntegration {
 		activeTables: 0, // Will be updated from game state
 	}
 
-	integration.botHelper = bot.NewBotIntegrationHelper(db, integration)
+	integration.botHelper = bot.NewBotIntegrationHelper(db, integration, entity.BotLoader)
 	integration.LoadBotConfig(context.Background())
 	return integration
 }
@@ -93,6 +93,21 @@ func (w *WhotBotIntegration) AddBotToMatch(ctx context.Context, numBots int) err
 	return nil
 }
 
+// RemoveBotFromMatch removes bots from the current match
+func (w *WhotBotIntegration) RemoveBotFromMatch(ctx context.Context, botUserID string) error {
+	procPkg := packager.GetProcessorPackagerFromContext(ctx)
+	if procPkg == nil {
+		return fmt.Errorf("processor package not found in context")
+	}
+	state := procPkg.GetState()
+	err := procPkg.GetProcessor().RemoveBotFromMatch(ctx, procPkg.GetLogger(), procPkg.GetNK(), procPkg.GetDb(), procPkg.GetDispatcher(), state, botUserID)
+	if err != nil {
+		return err
+	}
+	w.playerCount = state.GetPresenceSize()
+	return nil
+}
+
 // GetMaxPlayers returns maximum players allowed
 func (w *WhotBotIntegration) GetMaxPlayers() int {
 	return w.maxPlayers
@@ -138,8 +153,18 @@ func (w *WhotBotIntegration) SetMatchState(matchID string, betAmount int64, play
 }
 
 // ProcessBotLogic processes all bot-related logic
-func (w *WhotBotIntegration) ProcessBotLogic(ctx context.Context) error {
-	return w.botHelper.ProcessBotLogic(ctx)
+func (w *WhotBotIntegration) ProcessJoinBotLogic(ctx context.Context) error {
+	return w.botHelper.ProcessJoinBotLogic(ctx)
+}
+
+// ProcessBotLeaveLogic processes bot leave logic for a specific bot
+func (w *WhotBotIntegration) ProcessBotLeaveLogic(ctx context.Context, botUserID string) error {
+	return w.botHelper.ProcessBotLeaveLogic(ctx, botUserID)
+}
+
+// CheckAndJoinExpiredBots checks if any bots should join based on their join time
+func (w *WhotBotIntegration) CheckAndJoinExpiredBots(ctx context.Context) (bool, error) {
+	return w.botHelper.CheckAndJoinExpiredBots(ctx)
 }
 
 // GetBotHelper returns the bot helper for direct access

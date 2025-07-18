@@ -3,6 +3,7 @@ package state_machine
 import (
 	"context"
 
+	pb "github.com/nk-nigeria/cgp-common/proto/whot"
 	log "github.com/nk-nigeria/whot-module/pkg/log"
 	"github.com/nk-nigeria/whot-module/pkg/packager"
 	"github.com/nk-nigeria/whot-module/usecase/service"
@@ -10,6 +11,7 @@ import (
 
 type StateReward struct {
 	StateBase
+	botIntegration *service.WhotBotIntegration
 }
 
 func NewStateReward(fn FireFn) *StateReward {
@@ -27,6 +29,19 @@ func (s *StateReward) Enter(ctx context.Context, _ ...interface{}) error {
 	state := procPkg.GetState()
 	state.SetUpCountDown(rewardTimeout)
 
+	// Initialize bot integration once
+	s.botIntegration = service.NewWhotBotIntegration(procPkg.GetDb())
+
+	procPkg.GetProcessor().NotifyUpdateGameState(
+		state,
+		procPkg.GetLogger(),
+		procPkg.GetDispatcher(),
+		&pb.UpdateGameState{
+			State:     pb.GameState_GameStateReward,
+			CountDown: int64(rewardTimeout.Seconds()),
+		},
+	)
+
 	// process finish
 	procPkg.GetProcessor().ProcessFinishGame(
 		procPkg.GetContext(),
@@ -36,50 +51,6 @@ func (s *StateReward) Enter(ctx context.Context, _ ...interface{}) error {
 		procPkg.GetDispatcher(),
 		state)
 
-	// Check if bots should leave after game ends
-	botIntegration := service.NewWhotBotIntegration(procPkg.GetDb())
-	betAmount := int64(state.Label.GetMarkUnit())
-
-	// Get last game result (1 for win, -1 for lose, 0 for draw)
-	lastResult := 0 // Default to draw
-	if state.GetBalanceResult() != nil {
-		// Determine result based on balance - this is a simplified logic
-		// You can implement more sophisticated logic based on your game rules
-		balanceResult := state.GetBalanceResult()
-		if balanceResult.GetUpdates()[0].GetAmountChipAdd() > 0 {
-			lastResult = 1 // Win
-		} else {
-			lastResult = -1 // Lose
-		}
-		// If both are 0, it's a draw (lastResult = 0)
-	}
-
-	// Update match state for bot decision
-	botIntegration.SetMatchState(
-		"", // matchID not needed for leave logic
-		betAmount,
-		state.GetPresenceSize(),
-		lastResult,
-		0, // activeTables
-	)
-
-	if botIntegration.GetBotHelper().ShouldBotLeave(procPkg.GetContext()) {
-		log.GetLogger().Info("[reward] Bot leave triggered by rule after game end, result=%d", lastResult)
-		// Remove one bot from the match
-		botPresences := state.GetBotPresences()
-		if len(botPresences) > 0 {
-			// Remove the first bot
-			botToRemove := botPresences[0]
-			state.RemovePresence(botToRemove)
-			log.GetLogger().Info("[reward] Removed bot %s from match", botToRemove.GetUserId())
-
-			// Free the bot back to the pool
-			botIntegration.GetBotHelper().FreeBot(botToRemove.GetUserId())
-		}
-	} else {
-		log.GetLogger().Info("[reward] No bot leave triggered, result=%d", lastResult)
-	}
-
 	return nil
 }
 
@@ -88,6 +59,7 @@ func (s *StateReward) Exit(ctx context.Context, _ ...interface{}) error {
 	// clear result
 	procPkg := packager.GetProcessorPackagerFromContext(ctx)
 	state := procPkg.GetState()
+
 	procPkg.GetProcessor().ProcessKickUserNotInterac(log.GetLogger(), procPkg.GetDispatcher(), state)
 	state.ResetMatch()
 	return nil
@@ -100,6 +72,66 @@ func (s *StateReward) Process(ctx context.Context, args ...interface{}) error {
 		s.Trigger(ctx, triggerRewardTimeout)
 	} else {
 		// log.GetLogger().Info("[reward] not timeout %v", remain)
+		if state.IsNeedNotifyCountDown() {
+			log.GetLogger().Info("[reward] Process - sending countdown update: %d", remain)
+			procPkg.GetProcessor().NotifyUpdateGameState(
+				state,
+				procPkg.GetLogger(),
+				procPkg.GetDispatcher(),
+				&pb.UpdateGameState{
+					State:     pb.GameState_GameStateReward,
+					CountDown: int64(remain),
+				},
+			)
+
+			state.SetLastCountDown(remain)
+			log.GetLogger().Info("[reward] Process - updated lastCountDown to: %d", remain)
+
+			botPresences := state.GetBotPresences()
+
+			if remain == 10 {
+				// Step 1: Make initial random decision for bot leave (only once per bot)
+				log.GetLogger().Info("[reward] Making initial bot leave decisions at countdown 10")
+				for _, botPresence := range botPresences {
+					botUserID := botPresence.GetUserId()
+					_, exists := state.BotResults[botUserID]
+					if !exists {
+						continue
+					}
+					log.GetLogger().Info("[reward] Making random leave decision for bot %s", botUserID)
+					s.botIntegration.SetMatchState(
+						"",
+						int64(state.Label.GetMarkUnit()),
+						state.GetPresenceSize(),
+						state.BotResults[botUserID], // lastResult
+						0,                           // activeTables
+					)
+					// This will only random once per bot and create pending request
+					if err := s.botIntegration.GetBotHelper().ProcessBotLeaveLogic(ctx, botUserID); err != nil {
+						log.GetLogger().Error("[reward] Failed to decide bot leave for bot %s: %v", botUserID, err)
+					}
+				}
+			} else if remain < 10 {
+				// Step 2: Check and kick bots based on their leave time
+				log.GetLogger().Info("[reward] Checking bot kick times at countdown %d", remain)
+				for _, botPresence := range botPresences {
+					botUserID := botPresence.GetUserId()
+
+					// Check if this bot should be kicked based on time
+					kicked, err := s.botIntegration.GetBotHelper().CheckAndKickExpiredBots(ctx, botUserID)
+					if err != nil {
+						log.GetLogger().Error("[reward] Failed to check/kick bot %s: %v", botUserID, err)
+						continue
+					}
+
+					if kicked {
+						log.GetLogger().Info("[reward] Bot %s was kicked due to expired leave time", botUserID)
+						// Bot was already removed in CheckAndKickExpiredBots
+						continue
+					}
+				}
+			}
+		}
 	}
 
 	return nil
