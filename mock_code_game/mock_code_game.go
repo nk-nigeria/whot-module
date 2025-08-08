@@ -8,7 +8,7 @@ import (
 
 	"github.com/heroiclabs/nakama-common/runtime"
 
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 	"github.com/nk-nigeria/whot-module/entity"
 )
 
@@ -34,7 +34,7 @@ func InitMapMockCodeListCard(logger runtime.Logger) {
 		}
 		for _, u := range cpMock.Input.Cards {
 			listCard := &pb.ListCard{
-				Cards: entity.ParseListCard(u.Card),
+				WhotCards: entity.ParseListCard(u.Card),
 			}
 			MapMockCodeListCard[cpMock.Id] = append(MapMockCodeListCard[cpMock.Id], listCard)
 		}

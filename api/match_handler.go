@@ -65,7 +65,7 @@ func (m *MatchHandler) MatchInit(ctx context.Context, logger runtime.Logger, db 
 	}
 
 	matchInfo := &pb1.Match{}
-	err := proto.Unmarshal([]byte(rawLabel), matchInfo)
+	err := protojson.Unmarshal([]byte(rawLabel), matchInfo)
 	if err != nil {
 		logger.Error("failed to unmarshal match label: %v", err)
 		return nil, 0, ""

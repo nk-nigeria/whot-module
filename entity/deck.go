@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math/rand"
 
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 )
 
 const MaxCard = 54
@@ -16,35 +16,36 @@ type Deck struct {
 
 func NewDeck() *Deck {
 
-	validCards := map[pb.CardSuit][]pb.CardRank{
-		pb.CardSuit_SUIT_CIRCLE: {
-			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_4, pb.CardRank_RANK_5,
-			pb.CardRank_RANK_7, pb.CardRank_RANK_8,
-			pb.CardRank_RANK_10, pb.CardRank_RANK_11, pb.CardRank_RANK_12, pb.CardRank_RANK_13, pb.CardRank_RANK_14,
+	validCards := map[pb.WhotCardSuit][]pb.WhotCardRank{
+		pb.WhotCardSuit_WHOT_SUIT_CIRCLE: {
+			pb.WhotCardRank_WHOT_RANK_1, pb.WhotCardRank_WHOT_RANK_2, pb.WhotCardRank_WHOT_RANK_3, pb.WhotCardRank_WHOT_RANK_4, pb.WhotCardRank_WHOT_RANK_5,
+			pb.WhotCardRank_WHOT_RANK_7, pb.WhotCardRank_WHOT_RANK_8,
+			pb.WhotCardRank_WHOT_RANK_10, pb.WhotCardRank_WHOT_RANK_11, pb.WhotCardRank_WHOT_RANK_12, pb.WhotCardRank_WHOT_RANK_13, pb.WhotCardRank_WHOT_RANK_14,
 		},
-		pb.CardSuit_SUIT_TRIANGLE: {
-			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_4, pb.CardRank_RANK_5,
-			pb.CardRank_RANK_7, pb.CardRank_RANK_8,
-			pb.CardRank_RANK_10, pb.CardRank_RANK_11, pb.CardRank_RANK_12, pb.CardRank_RANK_13, pb.CardRank_RANK_14,
+		pb.WhotCardSuit_WHOT_SUIT_TRIANGLE: {
+			pb.WhotCardRank_WHOT_RANK_1, pb.WhotCardRank_WHOT_RANK_2, pb.WhotCardRank_WHOT_RANK_3, pb.WhotCardRank_WHOT_RANK_4, pb.WhotCardRank_WHOT_RANK_5,
+			pb.WhotCardRank_WHOT_RANK_7, pb.WhotCardRank_WHOT_RANK_8,
+			pb.WhotCardRank_WHOT_RANK_10, pb.WhotCardRank_WHOT_RANK_11, pb.WhotCardRank_WHOT_RANK_12, pb.WhotCardRank_WHOT_RANK_13, pb.WhotCardRank_WHOT_RANK_14,
 		},
-		pb.CardSuit_SUIT_CROSS: {
-			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_5, pb.CardRank_RANK_7,
-			pb.CardRank_RANK_10, pb.CardRank_RANK_11, pb.CardRank_RANK_13, pb.CardRank_RANK_14,
+		pb.WhotCardSuit_WHOT_SUIT_CROSS: {
+			pb.WhotCardRank_WHOT_RANK_1, pb.WhotCardRank_WHOT_RANK_2, pb.WhotCardRank_WHOT_RANK_3, pb.WhotCardRank_WHOT_RANK_5, pb.WhotCardRank_WHOT_RANK_7,
+			pb.WhotCardRank_WHOT_RANK_10, pb.WhotCardRank_WHOT_RANK_11, pb.WhotCardRank_WHOT_RANK_13, pb.WhotCardRank_WHOT_RANK_14,
 		},
-		pb.CardSuit_SUIT_SQUARE: {
-			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_5, pb.CardRank_RANK_7,
-			pb.CardRank_RANK_10, pb.CardRank_RANK_11, pb.CardRank_RANK_13, pb.CardRank_RANK_14,
+
+		pb.WhotCardSuit_WHOT_SUIT_SQUARE: {
+			pb.WhotCardRank_WHOT_RANK_1, pb.WhotCardRank_WHOT_RANK_2, pb.WhotCardRank_WHOT_RANK_3, pb.WhotCardRank_WHOT_RANK_5, pb.WhotCardRank_WHOT_RANK_7,
+			pb.WhotCardRank_WHOT_RANK_10, pb.WhotCardRank_WHOT_RANK_11, pb.WhotCardRank_WHOT_RANK_13, pb.WhotCardRank_WHOT_RANK_14,
 		},
-		pb.CardSuit_SUIT_STAR: {
-			pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_3, pb.CardRank_RANK_4, pb.CardRank_RANK_5,
-			pb.CardRank_RANK_7, pb.CardRank_RANK_8,
+		pb.WhotCardSuit_WHOT_SUIT_STAR: {
+			pb.WhotCardRank_WHOT_RANK_1, pb.WhotCardRank_WHOT_RANK_2, pb.WhotCardRank_WHOT_RANK_3, pb.WhotCardRank_WHOT_RANK_4, pb.WhotCardRank_WHOT_RANK_5,
+			pb.WhotCardRank_WHOT_RANK_7, pb.WhotCardRank_WHOT_RANK_8,
 		},
 	}
 
 	cards := &pb.ListCard{}
 	for suit, ranks := range validCards {
 		for _, rank := range ranks {
-			cards.Cards = append(cards.Cards, &pb.Card{
+			cards.WhotCards = append(cards.WhotCards, &pb.WhotCard{
 				Rank: rank,
 				Suit: suit,
 			})
@@ -52,9 +53,9 @@ func NewDeck() *Deck {
 	}
 
 	for i := 0; i < 5; i++ {
-		cards.Cards = append(cards.Cards, &pb.Card{
-			Rank: pb.CardRank_RANK_20,
-			Suit: pb.CardSuit_SUIT_UNSPECIFIED,
+		cards.WhotCards = append(cards.WhotCards, &pb.WhotCard{
+			Rank: pb.WhotCardRank_WHOT_RANK_20,
+			Suit: pb.WhotCardSuit_WHOT_SUIT_UNSPECIFIED,
 		})
 	}
 
@@ -66,14 +67,14 @@ func NewDeck() *Deck {
 
 // Shuffle the deck
 func (d *Deck) Shuffle() {
-	for i := 1; i < len(d.Cards.Cards); i++ {
+	for i := 1; i < len(d.Cards.WhotCards); i++ {
 		// Create a random int up to the number of Cards
 		r := rand.Intn(i + 1)
 
 		// If the the current card doesn't match the random
 		// int we generated then we'll switch them out
 		if i != r {
-			d.Cards.Cards[r], d.Cards.Cards[i] = d.Cards.Cards[i], d.Cards.Cards[r]
+			d.Cards.WhotCards[r], d.Cards.WhotCards[i] = d.Cards.WhotCards[i], d.Cards.WhotCards[r]
 		}
 	}
 }
@@ -91,19 +92,19 @@ func (d *Deck) Deal(n int, isTopCard bool) (*pb.ListCard, error) {
 	if isTopCard {
 		retryLimit := 10
 		for retry := 0; retry < retryLimit; retry++ {
-			if d.Cards.Cards[d.Dealt].Rank != pb.CardRank_RANK_20 {
+			if d.Cards.WhotCards[d.Dealt].Rank != pb.WhotCardRank_WHOT_RANK_20 {
 				break
 			}
 			Shuffle(d.Cards)
 		}
 
-		if d.Cards.Cards[d.Dealt].Rank == pb.CardRank_RANK_20 {
+		if d.Cards.WhotCards[d.Dealt].Rank == pb.WhotCardRank_WHOT_RANK_20 {
 			return nil, errors.New("deal.topcard.error-whot-retry-limit")
 		}
 	}
 	var cards pb.ListCard
 	for i := 0; i < n; i++ {
-		cards.Cards = append(cards.Cards, d.Cards.Cards[d.Dealt])
+		cards.WhotCards = append(cards.WhotCards, d.Cards.WhotCards[d.Dealt])
 		d.Dealt++
 	}
 
@@ -116,14 +117,14 @@ func (d *Deck) RemainingCards() int {
 
 // Shuffle any hand
 func Shuffle(cards *pb.ListCard) *pb.ListCard {
-	for i := 1; i < len(cards.Cards); i++ {
+	for i := 1; i < len(cards.WhotCards); i++ {
 		// Create a random int up to the number of Cards
 		r := rand.Intn(i + 1)
 
 		// If the the current card doesn't match the random
 		// int we generated then we'll switch them out
 		if i != r {
-			cards.Cards[r], cards.Cards[i] = cards.Cards[i], cards.Cards[r]
+			cards.WhotCards[r], cards.WhotCards[i] = cards.WhotCards[i], cards.WhotCards[r]
 		}
 	}
 

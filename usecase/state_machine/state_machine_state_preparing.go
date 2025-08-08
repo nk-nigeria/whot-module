@@ -3,7 +3,7 @@ package state_machine
 import (
 	"context"
 
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 	"github.com/nk-nigeria/whot-module/entity"
 	log "github.com/nk-nigeria/whot-module/pkg/log"
 	"github.com/nk-nigeria/whot-module/pkg/packager"
@@ -39,7 +39,7 @@ func (s *StatePreparing) Enter(ctx context.Context, args ...interface{}) error {
 		procPkg.GetLogger(),
 		procPkg.GetDispatcher(),
 		&pb.UpdateGameState{
-			State:     pb.GameState_GameStatePreparing,
+			State:     pb.GameState_GAME_STATE_PREPARING,
 			CountDown: initialCountdown,
 		},
 	)
@@ -99,7 +99,7 @@ func (s *StatePreparing) Process(ctx context.Context, args ...interface{}) error
 				procPkg.GetLogger(),
 				procPkg.GetDispatcher(),
 				&pb.UpdateGameState{
-					State:     pb.GameState_GameStatePreparing,
+					State:     pb.GameState_GAME_STATE_PREPARING,
 					CountDown: int64(remain),
 				},
 			)

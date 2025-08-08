@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -19,14 +19,14 @@ func GetDeck() *Deck {
 
 func TestShuffle(t *testing.T) {
 	deck := GetDeck()
-	originalCards := make([]*pb.Card, len(deck.Cards.Cards))
-	copy(originalCards, deck.Cards.Cards)
+	originalCards := make([]*pb.WhotCard, len(deck.Cards.WhotCards))
+	copy(originalCards, deck.Cards.WhotCards)
 
 	// Shuffle deck
 	deck.Shuffle()
 
 	// 1. Kiểm tra số lượng bài không đổi
-	if len(originalCards) != len(deck.Cards.Cards) {
+	if len(originalCards) != len(deck.Cards.WhotCards) {
 		t.Fatalf("❌ Số lượng lá bài thay đổi sau khi xáo")
 	}
 
@@ -36,7 +36,7 @@ func TestShuffle(t *testing.T) {
 		key := fmt.Sprintf("%v-%v", card.Rank, card.Suit)
 		cardCount[key]++
 	}
-	for _, card := range deck.Cards.Cards {
+	for _, card := range deck.Cards.WhotCards {
 		key := fmt.Sprintf("%v-%v", card.Rank, card.Suit)
 		cardCount[key]--
 		if cardCount[key] < 0 {
@@ -47,7 +47,7 @@ func TestShuffle(t *testing.T) {
 	// 3. Kiểm tra xem thứ tự đã thay đổi chưa
 	sameOrder := true
 	for i := range originalCards {
-		if !proto.Equal(originalCards[i], deck.Cards.Cards[i]) {
+		if !proto.Equal(originalCards[i], deck.Cards.WhotCards[i]) {
 			sameOrder = false
 			break
 		}
@@ -71,10 +71,10 @@ func TestDeal(t *testing.T) {
 		if err != nil {
 			t.Fatalf("❌ deal for player %d error: %v", i+1, err)
 		}
-		if len(cards.GetCards()) != cardsPerPlayer {
-			t.Errorf("❌ player %d nhận không đủ bài, expected %d, got %d", i+1, cardsPerPlayer, len(cards.GetCards()))
+		if len(cards.GetWhotCards()) != cardsPerPlayer {
+			t.Errorf("❌ player %d nhận không đủ bài, expected %d, got %d", i+1, cardsPerPlayer, len(cards.GetWhotCards()))
 		}
-		t.Logf("✅ Player %d nhận: %v", i+1, cards.GetCards())
+		t.Logf("✅ Player %d nhận: %v", i+1, cards.GetWhotCards())
 	}
 
 	expectedDealt := players * cardsPerPlayer

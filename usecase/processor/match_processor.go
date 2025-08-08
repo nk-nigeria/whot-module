@@ -13,8 +13,7 @@ import (
 	"github.com/heroiclabs/nakama-common/runtime"
 	"github.com/nk-nigeria/cgp-common/bot"
 	"github.com/nk-nigeria/cgp-common/define"
-	pb1 "github.com/nk-nigeria/cgp-common/proto"
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 	"github.com/nk-nigeria/whot-module/cgbdb"
 	"github.com/nk-nigeria/whot-module/constant"
 	"github.com/nk-nigeria/whot-module/entity"
@@ -50,8 +49,8 @@ func (m *processor) ProcessNewGame(logger runtime.Logger, dispatcher runtime.Mat
 			if found {
 				preCardMsg := &pb.UpdateDeal{
 					PresenceCard: &pb.PresenceCards{
-						Presence: k,
-						Cards:    v.Cards,
+						Presence:  k,
+						WhotCards: v.WhotCards,
 					},
 					TopCard:  s.TopCard,
 					IdDealer: s.DealerId,
@@ -68,7 +67,7 @@ func (m *processor) ProcessNewGame(logger runtime.Logger, dispatcher runtime.Mat
 	}
 	// gửi thông tin số lá bài user và bài trên bàn
 	cardState := &pb.UpdateCardState{
-		Event:            pb.CardEvent_NONE,
+		Event:            pb.WhotCardEvent_WHOT_EVENT_NONE,
 		DeckCount:        m.engine.GetDeckCount(),
 		PlayerCardCounts: m.engine.GetPlayerCardCounts(s),
 	}
@@ -126,7 +125,7 @@ func (m *processor) UpdateTurn(logger runtime.Logger, dispatcher runtime.MatchDi
 func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
 
 	var userID string
-	payload := &pb.Card{}
+	payload := &pb.WhotCard{}
 
 	if s.WaitingForWhotShape {
 		return
@@ -158,9 +157,9 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 	// Tạo thông báo cập nhật trạng thái
 	cardStateMsg := &pb.UpdateCardState{
 		UserId:           userID,
-		Event:            pb.CardEvent_PLAY,
+		Event:            pb.WhotCardEvent_WHOT_EVENT_PLAY,
 		TopCard:          s.TopCard,
-		Effect:           pb.CardEffect(effect),
+		Effect:           pb.WhotCardEffect(effect),
 		PickPenalty:      int32(s.PickPenalty),
 		TargetUserId:     s.EffectTarget,
 		DeckCount:        m.engine.GetDeckCount(),
@@ -191,8 +190,8 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 					// Gửi bài mới cho người chơi
 					dealMsg := &pb.UpdateDeal{
 						PresenceCard: &pb.PresenceCards{
-							Presence: otherUserId,
-							Cards:    s.Cards[otherUserId].Cards,
+							Presence:  otherUserId,
+							WhotCards: s.Cards[otherUserId].WhotCards,
 						},
 					}
 
@@ -204,9 +203,9 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 					// Thông báo công khai rằng người này đã rút bài
 					drawMsg := &pb.UpdateCardState{
 						UserId:           otherUserId,
-						Event:            pb.CardEvent_DRAW,
+						Event:            pb.WhotCardEvent_WHOT_EVENT_DRAW,
 						TopCard:          s.TopCard,
-						Effect:           pb.CardEffect_GENERAL_MARKET,
+						Effect:           pb.WhotCardEffect_GENERAL_MARKET,
 						DeckCount:        m.engine.GetDeckCount(),
 						PlayerCardCounts: m.engine.GetPlayerCardCounts(s),
 					}
@@ -226,7 +225,7 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 	}
 
 	if s.IsEndingGame {
-		s.GameState = pb.GameState_GameStateReward
+		s.GameState = pb.GameState_GAME_STATE_REWARD
 		return
 	}
 
@@ -236,7 +235,7 @@ func (m *processor) PlayCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 func (m *processor) ChooseWhotShape(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState, message runtime.MatchData) {
 
 	var userID string
-	var payload pb.Card
+	var payload pb.WhotCard
 
 	if message == nil {
 		userID = s.CurrentTurn
@@ -250,8 +249,8 @@ func (m *processor) ChooseWhotShape(logger runtime.Logger, dispatcher runtime.Ma
 
 	updateMsg := &pb.UpdateCardState{
 		UserId:     userID,
-		Event:      pb.CardEvent_PLAY,
-		Effect:     pb.CardEffect_CHOICE_SHAPE_GHOST,
+		Event:      pb.WhotCardEvent_WHOT_EVENT_PLAY,
+		Effect:     pb.WhotCardEffect_CHOICE_SHAPE_GHOST,
 		TopCard:    s.TopCard,
 		IsAutoPlay: message == nil,
 	}
@@ -284,8 +283,8 @@ func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 	if found {
 		dealMsg := &pb.UpdateDeal{
 			PresenceCard: &pb.PresenceCards{
-				Presence: userID,
-				Cards:    s.Cards[userID].Cards,
+				Presence:  userID,
+				WhotCards: s.Cards[userID].WhotCards,
 			},
 		}
 		m.broadcastMessage(logger, dispatcher,
@@ -303,10 +302,10 @@ func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 	}
 	drawMsg := &pb.UpdateCardState{
 		UserId:           userID,
-		Event:            pb.CardEvent_DRAW,
+		Event:            pb.WhotCardEvent_WHOT_EVENT_DRAW,
 		TopCard:          s.TopCard,
 		PickPenalty:      pickPenalty,
-		Effect:           pb.CardEffect_EFFECT_NONE,
+		Effect:           pb.WhotCardEffect_EFFECT_NONE,
 		DeckCount:        m.engine.GetDeckCount(),
 		PlayerCardCounts: m.engine.GetPlayerCardCounts(s),
 		IsAutoPlay:       message == nil,
@@ -318,7 +317,7 @@ func (m *processor) DrawCard(logger runtime.Logger, dispatcher runtime.MatchDisp
 		drawMsg, nil, nil, true,
 	)
 	if s.IsEndingGame {
-		s.GameState = pb.GameState_GameStateReward
+		s.GameState = pb.GameState_GAME_STATE_REWARD
 		return
 	}
 
@@ -354,7 +353,7 @@ func (m *processor) HandleAutoPlay(logger runtime.Logger, dispatcher runtime.Mat
 		// Thực hiện đánh hộ - thử tìm bài phù hợp để đánh
 		userID := s.CurrentTurn
 		userCards := s.Cards[userID]
-		if userCards != nil && len(userCards.Cards) > 0 {
+		if userCards != nil && len(userCards.WhotCards) > 0 {
 			m.PlayCard(logger, dispatcher, s, nil)
 			return true
 		}
@@ -500,8 +499,8 @@ func (m *processor) NotifyUpdateTable(s *entity.MatchState, logger runtime.Logge
 // with amount chip before and after apply reward
 // and add jackpot if user win
 func (m *processor) calcRewardForUserPlaying(ctx context.Context, nk runtime.NakamaModule, logger runtime.Logger, db *sql.DB, dispatcher runtime.MatchDispatcher, s *entity.MatchState, updateFinish *pb.UpdateFinish) *pb.BalanceResult {
-	listUserId := make([]string, 0, len(updateFinish.Results))
-	for _, uf := range updateFinish.Results {
+	listUserId := make([]string, 0, len(updateFinish.ResultWhots))
+	for _, uf := range updateFinish.ResultWhots {
 		listUserId = append(listUserId, uf.UserId)
 	}
 
@@ -524,7 +523,7 @@ func (m *processor) calcRewardForUserPlaying(ctx context.Context, nk runtime.Nak
 
 	balanceResult := pb.BalanceResult{}
 	listFeeGame := make([]entity.FeeGame, 0)
-	for _, uf := range updateFinish.Results {
+	for _, uf := range updateFinish.ResultWhots {
 		balance := &pb.BalanceUpdate{
 			UserId:           uf.UserId,
 			AmountChipBefore: mapUserWallet[uf.UserId].Chips,
@@ -574,7 +573,7 @@ func (m *processor) updateChipByResultGameFinish(ctx context.Context, logger run
 			"game_reward": entity.ModuleName,
 		}
 		if amountChip > 0 {
-			leaderBoardRecord := &pb1.CommonApiLeaderBoardRecord{
+			leaderBoardRecord := &pb.CommonApiLeaderBoardRecord{
 				GameCode: constant.GameCode,
 				UserId:   result.UserId,
 				Score:    amountChip,
@@ -675,7 +674,7 @@ func (m *processor) ProcessPresencesJoin(
 	// Cập nhật playing_match vào DB
 	// if len(listUserId) > 0 {
 	// 	matchID, _ := ctx.Value(runtime.RUNTIME_CTX_MATCH_ID).(string)
-	// 	playingMatch := &pb1.PlayingMatch{
+	// 	playingMatch := &pb.PlayingMatch{
 	// 		Code:    entity.ModuleName,
 	// 		MatchId: matchID,
 	// 	}
@@ -692,7 +691,7 @@ func (m *processor) ProcessPresencesJoin(
 	m.notifyUpdateTable(ctx, logger, nk, dispatcher, s, presences, nil)
 
 	switch s.GameState {
-	case pb.GameState_GameStateReward:
+	case pb.GameState_GAME_STATE_REWARD:
 		// Nếu đã hết game thì gửi balance
 		if result := s.GetBalanceResult(); result != nil {
 			m.broadcastMessage(
@@ -702,10 +701,10 @@ func (m *processor) ProcessPresencesJoin(
 			)
 		}
 
-	case pb.GameState_GameStatePlay:
+	case pb.GameState_GAME_STATE_PLAY:
 		// Gửi trạng thái số lá bài trên bàn
 		cardState := &pb.UpdateCardState{
-			Event:            pb.CardEvent_NONE,
+			Event:            pb.WhotCardEvent_WHOT_EVENT_NONE,
 			DeckCount:        m.engine.GetDeckCount(),
 			PlayerCardCounts: m.engine.GetPlayerCardCounts(s),
 			TopCard:          s.TopCard,
@@ -743,14 +742,14 @@ func (m *processor) ProcessPresencesJoin(
 			s.AddPlayingPresences(p)
 
 			cards := s.Cards[uid]
-			if cards == nil || len(cards.Cards) == 0 {
+			if cards == nil || len(cards.WhotCards) == 0 {
 				continue
 			}
 
 			msg := &pb.UpdateDeal{
 				PresenceCard: &pb.PresenceCards{
-					Presence: uid,
-					Cards:    cards.Cards,
+					Presence:  uid,
+					WhotCards: cards.WhotCards,
 				},
 				TopCard: s.TopCard,
 			}

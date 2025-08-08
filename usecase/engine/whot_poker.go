@@ -6,7 +6,7 @@ import (
 	"math"
 	"math/rand"
 
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 	"github.com/nk-nigeria/whot-module/entity"
 	mockcodegame "github.com/nk-nigeria/whot-module/mock_code_game"
 	"github.com/nk-nigeria/whot-module/pkg/log"
@@ -76,8 +76,8 @@ func (e *Engine) Deal(s *entity.MatchState) error {
 		}
 	}
 
-	if len(card.Cards) > 0 {
-		s.TopCard = card.Cards[0]
+	if len(card.WhotCards) > 0 {
+		s.TopCard = card.WhotCards[0]
 	} else {
 		return errors.New("no cards dealt for top card")
 	}
@@ -87,7 +87,7 @@ func (e *Engine) Deal(s *entity.MatchState) error {
 	return nil
 }
 
-func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (entity.CardEffect, error) {
+func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.WhotCard) (entity.CardEffect, error) {
 
 	if s.CurrentTurn != userId {
 		log.GetLogger().Error("not user's turn")
@@ -107,7 +107,7 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 
 	found := false
 	cardIndex := -1
-	for i, c := range playerCards.Cards {
+	for i, c := range playerCards.WhotCards {
 		if c.GetRank() == card.GetRank() && c.GetSuit() == card.GetSuit() {
 			found = true
 			cardIndex = i
@@ -128,14 +128,14 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 	effect := entity.EffectNone
 
 	switch card.GetRank() {
-	case pb.CardRank_RANK_1: // 1
+	case pb.WhotCardRank_WHOT_RANK_1: // 1
 		effect = entity.EffectHoldOn
 		// Reset double decking for function cards
 		s.DoubleDeckingEnabled = false
 		s.DoubleDeckingPlayer = ""
 		s.DoubleDeckingCount = 0
 
-	case pb.CardRank_RANK_2: // 2
+	case pb.WhotCardRank_WHOT_RANK_2: // 2
 		effect = entity.EffectPickTwo
 		s.PickPenalty += 2
 		s.EffectTarget = s.GetNextPlayerClockwise(userId)
@@ -145,7 +145,7 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 		s.DoubleDeckingPlayer = ""
 		s.DoubleDeckingCount = 0
 
-	case pb.CardRank_RANK_5: // 5
+	case pb.WhotCardRank_WHOT_RANK_5: // 5
 		effect = entity.EffectPickThree
 		s.PickPenalty += 3
 		s.EffectTarget = s.GetNextPlayerClockwise(userId)
@@ -155,7 +155,7 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 		s.DoubleDeckingPlayer = ""
 		s.DoubleDeckingCount = 0
 
-	case pb.CardRank_RANK_8: // 8
+	case pb.WhotCardRank_WHOT_RANK_8: // 8
 		effect = entity.EffectSuspension
 		nextPlayer := s.GetNextPlayerClockwise(userId)
 		s.EffectTarget = nextPlayer
@@ -165,14 +165,14 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 		s.DoubleDeckingPlayer = ""
 		s.DoubleDeckingCount = 0
 
-	case pb.CardRank_RANK_14: // 14
+	case pb.WhotCardRank_WHOT_RANK_14: // 14
 		effect = entity.EffectGeneralMarket
 		// Reset double decking for function cards
 		s.DoubleDeckingEnabled = false
 		s.DoubleDeckingPlayer = ""
 		s.DoubleDeckingCount = 0
 
-	case pb.CardRank_RANK_20: // 20
+	case pb.WhotCardRank_WHOT_RANK_20: // 20
 		fmt.Printf("Whot card played by %s\n", userId)
 		effect = entity.EffectWhot
 		s.WaitingForWhotShape = true
@@ -187,10 +187,10 @@ func (e *Engine) PlayCard(s *entity.MatchState, userId string, card *pb.Card) (e
 	s.CurrentEffect = effect
 
 	// Xóa lá bài đã đánh khỏi bài của người chơi
-	playerCards.Cards = append(playerCards.Cards[:cardIndex], playerCards.Cards[cardIndex+1:]...)
+	playerCards.WhotCards = append(playerCards.WhotCards[:cardIndex], playerCards.WhotCards[cardIndex+1:]...)
 	s.Cards[userId] = playerCards
 
-	if len(playerCards.Cards) == 0 {
+	if len(playerCards.WhotCards) == 0 {
 		s.WinnerId = userId
 		s.CurrentEffect = entity.EffectNone
 		s.EffectTarget = ""
@@ -257,9 +257,9 @@ func (e *Engine) DrawCardsFromDeck(s *entity.MatchState, userID string) (int, er
 	if err != nil {
 		return 0, err
 	}
-	cardsToDraw = len(card.Cards)
+	cardsToDraw = len(card.WhotCards)
 
-	s.Cards[userID].Cards = append(s.Cards[userID].Cards, card.Cards...)
+	s.Cards[userID].WhotCards = append(s.Cards[userID].WhotCards, card.WhotCards...)
 
 	if e.deck.RemainingCards() == 0 {
 		log.GetLogger().Info("Deck is empty, handle game reward")
@@ -292,7 +292,7 @@ func (e *Engine) HandleGeneralMarket(s *entity.MatchState, userID string) error 
 	return nil
 }
 
-func (e *Engine) ChooseWhotShape(s *entity.MatchState, userID string, shape pb.CardSuit) error {
+func (e *Engine) ChooseWhotShape(s *entity.MatchState, userID string, shape pb.WhotCardSuit) error {
 	// Kiểm tra xem có đang chờ chọn hình không
 	if !s.WaitingForWhotShape {
 		return errors.New("not waiting for Whot shape choice")
@@ -310,9 +310,9 @@ func (e *Engine) ChooseWhotShape(s *entity.MatchState, userID string, shape pb.C
 	return nil
 }
 
-func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.Card {
+func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.WhotCard {
 	userCards := s.Cards[userId]
-	if userCards == nil || len(userCards.Cards) == 0 {
+	if userCards == nil || len(userCards.WhotCards) == 0 {
 		return nil
 	}
 
@@ -323,14 +323,14 @@ func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.Card 
 	// 2. Ưu tiên lá bài có cùng suit
 	// 3. Nếu có lá Whot (joker), chọn Whot
 
-	var bestSameRankCard *pb.Card
-	var bestSameSuitCard *pb.Card
-	var bestWhotCard *pb.Card
+	var bestSameRankCard *pb.WhotCard
+	var bestSameSuitCard *pb.WhotCard
+	var bestWhotCard *pb.WhotCard
 
 	// Kiểm tra xem có đang trong trạng thái double decking không
 	isDoubleDecking := s.IsDoubleDecking && s.DoubleDeckingCount == 1
 
-	for _, card := range userCards.Cards {
+	for _, card := range userCards.WhotCards {
 		// Khi đang double decking, lá thứ 2 phải là lá thường (không phải lá chức năng)
 		if isDoubleDecking {
 			if e.isFunctionCard(card) {
@@ -355,7 +355,7 @@ func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.Card 
 		}
 
 		// 3. Lá WHOT (Rank 20)
-		if card.Rank == pb.CardRank_RANK_20 && s.CurrentEffect != entity.EffectPickTwo && s.CurrentEffect != entity.EffectPickThree {
+		if card.Rank == pb.WhotCardRank_WHOT_RANK_20 && s.CurrentEffect != entity.EffectPickTwo && s.CurrentEffect != entity.EffectPickThree {
 			if bestWhotCard == nil {
 				bestWhotCard = card // chỉ cần 1 lá Whot là đủ
 			}
@@ -376,7 +376,7 @@ func (e *Engine) FindPlayableCard(s *entity.MatchState, userId string) *pb.Card 
 
 func (e *Engine) Finish(s *entity.MatchState) *pb.UpdateFinish {
 
-	updateFinish := pb.UpdateFinish{}
+	updateFinish := &pb.UpdateFinish{}
 
 	// 1. Tính điểm cho tất cả người chơi
 	playerScores := e.calculatePlayerScores(s) // map[uid]int
@@ -445,16 +445,16 @@ func (e *Engine) Finish(s *entity.MatchState) *pb.UpdateFinish {
 			s.BotResults[uid] = lastResult
 		}
 
-		updateFinish.Results = append(updateFinish.Results, &pb.WhotPlayerResult{
+		updateFinish.ResultWhots = append(updateFinish.ResultWhots, &pb.WhotPlayerResult{
 			UserId:         uid,
 			TotalPoints:    int64(total),
 			IsWinner:       isWinner,
 			WinFactor:      winFactor,
-			RemainingCards: s.Cards[uid].Cards,
+			RemainingCards: s.Cards[uid].WhotCards,
 		})
 	}
 
-	return &updateFinish
+	return updateFinish
 }
 
 func (e *Engine) calculatePlayerScores(s *entity.MatchState) map[string]int {
@@ -463,7 +463,7 @@ func (e *Engine) calculatePlayerScores(s *entity.MatchState) map[string]int {
 		uid := val.(string)
 		playerCards := s.Cards[uid]
 		total := 0
-		for _, card := range playerCards.Cards {
+		for _, card := range playerCards.WhotCards {
 			total += entity.CalculateCardValue(card)
 		}
 		scores[uid] = total
@@ -488,27 +488,27 @@ func (e *Engine) isValidPlay(playedCard, topCard entity.Card) bool {
 	return false
 }
 
-func (e *Engine) ChooseAutomaticWhotShape(s *entity.MatchState) *pb.Card {
+func (e *Engine) ChooseAutomaticWhotShape(s *entity.MatchState) *pb.WhotCard {
 
 	userId := s.CurrentTurn
 
 	userCards := s.Cards[userId]
-	if userCards == nil || len(userCards.Cards) == 0 {
+	if userCards == nil || len(userCards.WhotCards) == 0 {
 		return nil
 	}
 
-	suitCount := make(map[pb.CardSuit]int)
+	suitCount := make(map[pb.WhotCardSuit]int)
 
 	// Đếm số lượng mỗi Suit (bỏ qua WHOT)
-	for _, card := range userCards.Cards {
-		if card.Rank == pb.CardRank_RANK_20 {
+	for _, card := range userCards.WhotCards {
+		if card.Rank == pb.WhotCardRank_WHOT_RANK_20 {
 			continue
 		}
 		suitCount[card.Suit]++
 	}
 
 	// Tìm Suit có nhiều lá nhất
-	bestSuit := pb.CardSuit_SUIT_UNSPECIFIED
+	bestSuit := pb.WhotCardSuit_WHOT_SUIT_UNSPECIFIED
 	maxCount := -1
 	for suit, count := range suitCount {
 		if count > maxCount {
@@ -518,20 +518,20 @@ func (e *Engine) ChooseAutomaticWhotShape(s *entity.MatchState) *pb.Card {
 	}
 
 	// Phương án : Chọn shape ngẫu nhiên
-	if bestSuit == pb.CardSuit_SUIT_UNSPECIFIED {
-		shapes := []pb.CardSuit{
-			pb.CardSuit_SUIT_CIRCLE,
-			pb.CardSuit_SUIT_SQUARE,
-			pb.CardSuit_SUIT_TRIANGLE,
-			pb.CardSuit_SUIT_STAR,
-			pb.CardSuit_SUIT_CROSS,
+	if bestSuit == pb.WhotCardSuit_WHOT_SUIT_UNSPECIFIED {
+		shapes := []pb.WhotCardSuit{
+			pb.WhotCardSuit_WHOT_SUIT_CIRCLE,
+			pb.WhotCardSuit_WHOT_SUIT_SQUARE,
+			pb.WhotCardSuit_WHOT_SUIT_TRIANGLE,
+			pb.WhotCardSuit_WHOT_SUIT_STAR,
+			pb.WhotCardSuit_WHOT_SUIT_CROSS,
 		}
 		randomIndex := rand.Intn(len(shapes))
 		bestSuit = shapes[randomIndex]
 	}
 
-	return &pb.Card{
-		Rank: pb.CardRank_RANK_20,
+	return &pb.WhotCard{
+		Rank: pb.WhotCardRank_WHOT_RANK_20,
 		Suit: bestSuit,
 	}
 }
@@ -563,8 +563,8 @@ func (e *Engine) CheckDoubleDeckingEligibility(s *entity.MatchState, userId stri
 }
 
 // GetPlayableCardsForDouble returns cards that can be played in double decking
-func (e *Engine) GetPlayableCardsForDouble(s *entity.MatchState, userId string) []*pb.Card {
-	var playableCards []*pb.Card
+func (e *Engine) GetPlayableCardsForDouble(s *entity.MatchState, userId string) []*pb.WhotCard {
+	var playableCards []*pb.WhotCard
 
 	playerCards, ok := s.Cards[userId]
 	if !ok {
@@ -576,7 +576,7 @@ func (e *Engine) GetPlayableCardsForDouble(s *entity.MatchState, userId string) 
 		return playableCards
 	}
 
-	for _, card := range playerCards.Cards {
+	for _, card := range playerCards.WhotCards {
 		// Skip function cards
 		if e.isFunctionCard(card) {
 			continue
@@ -595,17 +595,17 @@ func (e *Engine) GetPlayableCardsForDouble(s *entity.MatchState, userId string) 
 }
 
 // isFunctionCard checks if a card is a function card (not allowed in double decking)
-func (e *Engine) isFunctionCard(card *pb.Card) bool {
+func (e *Engine) isFunctionCard(card *pb.WhotCard) bool {
 	switch card.GetRank() {
-	case pb.CardRank_RANK_1, pb.CardRank_RANK_2, pb.CardRank_RANK_5,
-		pb.CardRank_RANK_8, pb.CardRank_RANK_14, pb.CardRank_RANK_20:
+	case pb.WhotCardRank_WHOT_RANK_1, pb.WhotCardRank_WHOT_RANK_2, pb.WhotCardRank_WHOT_RANK_5,
+		pb.WhotCardRank_WHOT_RANK_8, pb.WhotCardRank_WHOT_RANK_14, pb.WhotCardRank_WHOT_RANK_20:
 		return true
 	default:
 		return false
 	}
 }
 
-func (e *Engine) playSecondCard(s *entity.MatchState, userId string, card *pb.Card) (entity.CardEffect, error) {
+func (e *Engine) playSecondCard(s *entity.MatchState, userId string, card *pb.WhotCard) (entity.CardEffect, error) {
 	playerCards, ok := s.Cards[userId]
 	if !ok {
 		log.GetLogger().Error("player cards not found")
@@ -614,7 +614,7 @@ func (e *Engine) playSecondCard(s *entity.MatchState, userId string, card *pb.Ca
 
 	found := false
 	cardIndex := -1
-	for i, c := range playerCards.Cards {
+	for i, c := range playerCards.WhotCards {
 		if c.GetRank() == card.GetRank() && c.GetSuit() == card.GetSuit() {
 			found = true
 			cardIndex = i
@@ -642,10 +642,10 @@ func (e *Engine) playSecondCard(s *entity.MatchState, userId string, card *pb.Ca
 	s.DoubleDeckingCount = 2
 
 	// Xóa lá bài đã đánh khỏi bài của người chơi
-	playerCards.Cards = append(playerCards.Cards[:cardIndex], playerCards.Cards[cardIndex+1:]...)
+	playerCards.WhotCards = append(playerCards.WhotCards[:cardIndex], playerCards.WhotCards[cardIndex+1:]...)
 	s.Cards[userId] = playerCards
 
-	if len(playerCards.Cards) == 0 {
+	if len(playerCards.WhotCards) == 0 {
 		s.WinnerId = userId
 		s.CurrentEffect = entity.EffectNone
 		s.EffectTarget = ""

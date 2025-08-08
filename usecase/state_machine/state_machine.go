@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 	"github.com/nk-nigeria/whot-module/pkg/packager"
 	"github.com/nk-nigeria/whot-module/usecase/service"
 	"github.com/qmuntal/stateless"
@@ -59,30 +59,30 @@ func (m *Machine) configure() {
 		state := procPkg.GetState()
 		switch t.Destination {
 		case stateInit:
-			state.GameState = pb.GameState_GameStateIdle
+			state.GameState = pb.GameState_GAME_STATE_IDLE
 		case stateIdle:
 			{
-				state.GameState = pb.GameState_GameStateIdle
+				state.GameState = pb.GameState_GAME_STATE_IDLE
 			}
 		case stateMatching:
 			{
-				state.GameState = pb.GameState_GameStateMatching
+				state.GameState = pb.GameState_GAME_STATE_MATCHING
 			}
 		case statePreparing:
 			{
-				state.GameState = pb.GameState_GameStatePreparing
+				state.GameState = pb.GameState_GAME_STATE_PREPARING
 			}
 		case statePlay:
 			{
-				state.GameState = pb.GameState_GameStatePlay
+				state.GameState = pb.GameState_GAME_STATE_PLAY
 			}
 		case stateReward:
 			{
-				state.GameState = pb.GameState_GameStateReward
+				state.GameState = pb.GameState_GAME_STATE_REWARD
 			}
 		case stateFinish:
 			{
-				state.GameState = pb.GameState_GameStateFinish
+				state.GameState = pb.GameState_GAME_STATE_FINISH
 			}
 		}
 	})
@@ -145,17 +145,17 @@ func (m *Machine) MustState() stateless.State {
 func (m *Machine) GetPbState() pb.GameState {
 	switch m.state.MustState() {
 	case stateIdle:
-		return pb.GameState_GameStateIdle
+		return pb.GameState_GAME_STATE_IDLE
 	case stateMatching:
-		return pb.GameState_GameStateMatching
+		return pb.GameState_GAME_STATE_MATCHING
 	case statePreparing:
-		return pb.GameState_GameStatePreparing
+		return pb.GameState_GAME_STATE_PREPARING
 	case statePlay:
-		return pb.GameState_GameStatePlay
+		return pb.GameState_GAME_STATE_PLAY
 	case stateReward:
-		return pb.GameState_GameStateReward
+		return pb.GameState_GAME_STATE_REWARD
 	default:
-		return pb.GameState_GameStateUnknown
+		return pb.GameState_GAME_STATE_UNKNOWN
 	}
 }
 

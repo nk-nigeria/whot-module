@@ -5,8 +5,7 @@ import (
 	"strconv"
 
 	"github.com/heroiclabs/nakama-common/runtime"
-	pb1 "github.com/nk-nigeria/cgp-common/proto"
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 )
 
 type ArrPbPlayer []*pb.Player
@@ -63,7 +62,7 @@ func (arr ArrPbPlayer) ReadProfile(ctx context.Context, nk runtime.NakamaModule,
 	if err != nil {
 		return err
 	}
-	mapWallet := make(map[string]*pb1.SimpleProfile, 0)
+	mapWallet := make(map[string]*pb.SimpleProfile, 0)
 	for _, w := range profiles {
 		mapWallet[w.UserId] = w
 	}

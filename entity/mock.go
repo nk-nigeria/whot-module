@@ -1,6 +1,6 @@
 package entity
 
-import pb "github.com/nk-nigeria/cgp-common/proto/whot"
+import pb "github.com/nk-nigeria/cgp-common/proto"
 
 type MockCard struct {
 	UserId string `json:"userId"`

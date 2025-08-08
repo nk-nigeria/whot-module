@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"strings"
 
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 )
 
-func ParseCard(str string) *pb.Card {
+func ParseCard(str string) *pb.WhotCard {
 	l := len(str)
 	if l < 2 {
 		return nil
@@ -23,23 +23,23 @@ func ParseCard(str string) *pb.Card {
 		return nil
 	}
 
-	card := &pb.Card{
-		Rank: pb.CardRank(rankInt),
+	card := &pb.WhotCard{
+		Rank: pb.WhotCardRank(rankInt),
 	}
 
 	switch suitStr {
 	case "c":
-		card.Suit = pb.CardSuit_SUIT_CIRCLE
+		card.Suit = pb.WhotCardSuit_WHOT_SUIT_CIRCLE
 	case "x":
-		card.Suit = pb.CardSuit_SUIT_CROSS
+		card.Suit = pb.WhotCardSuit_WHOT_SUIT_CROSS
 	case "s":
-		card.Suit = pb.CardSuit_SUIT_STAR
+		card.Suit = pb.WhotCardSuit_WHOT_SUIT_STAR
 	case "t":
-		card.Suit = pb.CardSuit_SUIT_TRIANGLE
+		card.Suit = pb.WhotCardSuit_WHOT_SUIT_TRIANGLE
 	case "q":
-		card.Suit = pb.CardSuit_SUIT_SQUARE
+		card.Suit = pb.WhotCardSuit_WHOT_SUIT_SQUARE
 	case "w":
-		card.Suit = pb.CardSuit_SUIT_UNSPECIFIED
+		card.Suit = pb.WhotCardSuit_WHOT_SUIT_UNSPECIFIED
 	default:
 		return nil
 	}
@@ -47,8 +47,8 @@ func ParseCard(str string) *pb.Card {
 	return card
 }
 
-func ParseListCard(str string) []*pb.Card {
-	ml := make([]*pb.Card, 0)
+func ParseListCard(str string) []*pb.WhotCard {
+	ml := make([]*pb.WhotCard, 0)
 	arrCardMock := strings.Split(str, ";")
 	for _, s := range arrCardMock {
 		s = strings.TrimSpace(s)
@@ -57,14 +57,14 @@ func ParseListCard(str string) []*pb.Card {
 	return ml
 }
 
-func ParseMockCard(fileMock string) [][]*pb.Card {
+func ParseMockCard(fileMock string) [][]*pb.WhotCard {
 	f, err := os.Open(fileMock)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
-	list := make([][]*pb.Card, 0)
+	list := make([][]*pb.WhotCard, 0)
 	for scanner.Scan() {
 		lineText := strings.TrimSpace(scanner.Text())
 		if strings.HasPrefix(lineText, "#") || len(lineText) == 0 {

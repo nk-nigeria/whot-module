@@ -1,10 +1,10 @@
 package entity
 
-import pb "github.com/nk-nigeria/cgp-common/proto/whot"
+import pb "github.com/nk-nigeria/cgp-common/proto"
 
 type ListCard []Card
 
-func NewListCard(list []*pb.Card) ListCard {
+func NewListCard(list []*pb.WhotCard) ListCard {
 	newList := ListCard{}
 	for _, card := range list {
 		newList = append(newList, NewCardFromPb(card.GetRank(), card.GetSuit()))

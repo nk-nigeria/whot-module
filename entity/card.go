@@ -3,7 +3,7 @@ package entity
 import (
 	"fmt"
 
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 )
 
 // WHOT sử dụng 5 suit và các số từ 1–14 + WHOT
@@ -171,29 +171,29 @@ var mapStringSuits = map[uint8]string{
 	SuitSquare:   "SQUARE",
 }
 
-var mapRanks = map[pb.CardRank]uint8{
-	pb.CardRank_RANK_1:  Ranks[0],
-	pb.CardRank_RANK_2:  Ranks[1],
-	pb.CardRank_RANK_3:  Ranks[2],
-	pb.CardRank_RANK_4:  Ranks[3],
-	pb.CardRank_RANK_5:  Ranks[4],
-	pb.CardRank_RANK_7:  Ranks[6],
-	pb.CardRank_RANK_8:  Ranks[7],
-	pb.CardRank_RANK_10: Ranks[9],
-	pb.CardRank_RANK_11: Ranks[10],
-	pb.CardRank_RANK_12: Ranks[11],
-	pb.CardRank_RANK_13: Ranks[12],
-	pb.CardRank_RANK_14: Ranks[13],
-	pb.CardRank_RANK_20: RankWHOT,
+var mapRanks = map[pb.WhotCardRank]uint8{
+	pb.WhotCardRank_WHOT_RANK_1:  Ranks[0],
+	pb.WhotCardRank_WHOT_RANK_2:  Ranks[1],
+	pb.WhotCardRank_WHOT_RANK_3:  Ranks[2],
+	pb.WhotCardRank_WHOT_RANK_4:  Ranks[3],
+	pb.WhotCardRank_WHOT_RANK_5:  Ranks[4],
+	pb.WhotCardRank_WHOT_RANK_7:  Ranks[6],
+	pb.WhotCardRank_WHOT_RANK_8:  Ranks[7],
+	pb.WhotCardRank_WHOT_RANK_10: Ranks[9],
+	pb.WhotCardRank_WHOT_RANK_11: Ranks[10],
+	pb.WhotCardRank_WHOT_RANK_12: Ranks[11],
+	pb.WhotCardRank_WHOT_RANK_13: Ranks[12],
+	pb.WhotCardRank_WHOT_RANK_14: Ranks[13],
+	pb.WhotCardRank_WHOT_RANK_20: RankWHOT,
 }
 
-var mapSuits = map[pb.CardSuit]uint8{
-	pb.CardSuit_SUIT_UNSPECIFIED: SuitNone,
-	pb.CardSuit_SUIT_CIRCLE:      SuitCircle,
-	pb.CardSuit_SUIT_CROSS:       SuitCross,
-	pb.CardSuit_SUIT_SQUARE:      SuitSquare,
-	pb.CardSuit_SUIT_STAR:        SuitStar,
-	pb.CardSuit_SUIT_TRIANGLE:    SuitTriangle,
+var mapSuits = map[pb.WhotCardSuit]uint8{
+	pb.WhotCardSuit_WHOT_SUIT_UNSPECIFIED: SuitNone,
+	pb.WhotCardSuit_WHOT_SUIT_CIRCLE:      SuitCircle,
+	pb.WhotCardSuit_WHOT_SUIT_CROSS:       SuitCross,
+	pb.WhotCardSuit_WHOT_SUIT_SQUARE:      SuitSquare,
+	pb.WhotCardSuit_WHOT_SUIT_STAR:        SuitStar,
+	pb.WhotCardSuit_WHOT_SUIT_TRIANGLE:    SuitTriangle,
 }
 
 type CardEffect int
@@ -218,7 +218,7 @@ const (
 	CardValueWhot          = 20
 )
 
-func NewCardFromPb(rank pb.CardRank, suit pb.CardSuit) Card {
+func NewCardFromPb(rank pb.WhotCardRank, suit pb.WhotCardSuit) Card {
 	card := uint8(0)
 	card |= mapRanks[rank]
 	card |= mapSuits[suit]
@@ -241,11 +241,11 @@ func (c Card) GetSuit() uint8 {
 	return uint8(c & 0x0F)
 }
 
-func CalculateCardValue(card *pb.Card) int {
+func CalculateCardValue(card *pb.WhotCard) int {
 	value := int(card.GetRank())
 
 	// Lá Star có giá trị gấp đôiMore actions
-	if card.GetSuit() == pb.CardSuit(SuitStar) {
+	if card.GetSuit() == pb.WhotCardSuit_WHOT_SUIT_STAR {
 		value *= 2
 	}
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 	log "github.com/nk-nigeria/whot-module/pkg/log"
 	"github.com/nk-nigeria/whot-module/pkg/packager"
 )
@@ -31,7 +31,7 @@ func (s *StatePlay) Enter(ctx context.Context, agrs ...interface{}) error {
 		procPkg.GetLogger(),
 		procPkg.GetDispatcher(),
 		&pb.UpdateGameState{
-			State: pb.GameState_GameStatePlay,
+			State: pb.GameState_GAME_STATE_PLAY,
 		},
 	)
 	// New game here
@@ -79,7 +79,7 @@ func (s *StatePlay) Process(ctx context.Context, args ...interface{}) error {
 		}
 	}
 
-	if state.GameState == pb.GameState_GameStateReward {
+	if state.GameState == pb.GameState_GAME_STATE_REWARD {
 		s.Trigger(ctx, triggerPlayTimeout)
 	}
 

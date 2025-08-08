@@ -12,8 +12,7 @@ import (
 	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/heroiclabs/nakama-common/runtime"
 	"github.com/nk-nigeria/cgp-common/bot"
-	pb1 "github.com/nk-nigeria/cgp-common/proto"
-	pb "github.com/nk-nigeria/cgp-common/proto/whot"
+	pb "github.com/nk-nigeria/cgp-common/proto"
 	"github.com/nk-nigeria/whot-module/pkg/log"
 )
 
@@ -36,7 +35,7 @@ var BotLoader = bot.NewBotLoader(nil, "", 0)
 
 type MatchState struct {
 	Random       *rand.Rand
-	Label        *pb1.Match
+	Label        *pb.Match
 	MinPresences int
 
 	// Currently connected users, or reserved spaces.
@@ -65,7 +64,7 @@ type MatchState struct {
 	// BotLogic *BotLogic
 
 	// The top card on the table.
-	TopCard *pb.Card
+	TopCard *pb.WhotCard
 	// Mark assignments to player user IDs.
 	Cards map[string]*pb.ListCard
 	// Delay for the first turn.
@@ -91,7 +90,7 @@ type MatchState struct {
 	jackpotTreasure *pb.Jackpot
 }
 
-func NewMatchState(label *pb1.Match) MatchState {
+func NewMatchState(label *pb.Match) MatchState {
 	m := MatchState{
 		Random:              rand.New(rand.NewSource(time.Now().UnixNano())),
 		Label:               label,
