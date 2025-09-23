@@ -45,17 +45,18 @@ func (s *StateMatching) Enter(ctx context.Context, _ ...interface{}) error {
 		},
 	)
 
-	// Create bot integration instance once during state enter
-	botIntegration := service.NewWhotBotIntegration(procPkg.GetDb())
-
-	// Store in global variable for preparing state to use
-	SetGlobalBotIntegration(botIntegration)
+	// Initialize bot integration if not already done
+	botIntegration := GetGlobalBotIntegration()
+	if botIntegration == nil {
+		botIntegration = service.NewWhotBotIntegration(procPkg.GetDb())
+		SetGlobalBotIntegration(botIntegration)
+	}
 
 	// Step 1: Make initial bot join decision (only once)
 	if state.GetPresenceSize() < entity.MaxPresences {
 		// Update match state
 		botIntegration.SetMatchState(
-			"",
+			state.Label.GetMatchId(),
 			int64(state.Label.GetMarkUnit()),
 			state.GetPresenceSize(),
 			0, // lastResult

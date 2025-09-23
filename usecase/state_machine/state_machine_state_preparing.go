@@ -44,15 +44,12 @@ func (s *StatePreparing) Enter(ctx context.Context, args ...interface{}) error {
 		},
 	)
 
-	// Use global bot integration from matching state instead of creating new one
+	// Initialize bot integration if not already done
 	botIntegration := GetGlobalBotIntegration()
-
 	if botIntegration == nil {
 		// Fallback: create new instance if global one is not available
 		botIntegration = service.NewWhotBotIntegration(procPkg.GetDb())
 		log.GetLogger().Info("[preparing] Created new bot integration (global not available)")
-	} else {
-		log.GetLogger().Info("[preparing] Using global bot integration from matching state")
 	}
 
 	// Check for pending join requests from matching state
@@ -64,13 +61,11 @@ func (s *StatePreparing) Enter(ctx context.Context, args ...interface{}) error {
 			log.GetLogger().Info("[preparing] Enter - Found pending join request from matching with remaining time: %v", remainingTime)
 		} else {
 			log.GetLogger().Info("[preparing] Enter - No pending join request from matching")
-			SetGlobalBotIntegration(nil)
 		}
 
 		// Don't execute pending requests here, let Process() handle it
 	} else {
 		procPkg.GetLogger().Info("[preparing] Skip bot join - maximum players reached (%d)", entity.MaxPresences)
-		SetGlobalBotIntegration(nil)
 	}
 
 	return nil
@@ -78,10 +73,6 @@ func (s *StatePreparing) Enter(ctx context.Context, args ...interface{}) error {
 
 func (s *StatePreparing) Exit(_ context.Context, _ ...interface{}) error {
 	log.GetLogger().Info("[preparing] exit")
-	// Clear global bot integration
-	if GetGlobalBotIntegration() != nil {
-		SetGlobalBotIntegration(nil)
-	}
 	return nil
 }
 

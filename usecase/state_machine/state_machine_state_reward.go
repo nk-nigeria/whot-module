@@ -30,7 +30,11 @@ func (s *StateReward) Enter(ctx context.Context, _ ...interface{}) error {
 	state.SetUpCountDown(rewardTimeout)
 
 	// Initialize bot integration once
-	s.botIntegration = service.NewWhotBotIntegration(procPkg.GetDb())
+	s.botIntegration = GetGlobalBotIntegration()
+	if s.botIntegration == nil {
+		s.botIntegration = service.NewWhotBotIntegration(procPkg.GetDb())
+		SetGlobalBotIntegration(s.botIntegration)
+	}
 
 	procPkg.GetProcessor().NotifyUpdateGameState(
 		state,
@@ -100,7 +104,7 @@ func (s *StateReward) Process(ctx context.Context, args ...interface{}) error {
 					}
 					log.GetLogger().Info("[reward] Making random leave decision for bot %s", botUserID)
 					s.botIntegration.SetMatchState(
-						"",
+						state.Label.GetMatchId(),
 						int64(state.Label.GetMarkUnit()),
 						state.GetPresenceSize(),
 						state.BotResults[botUserID], // lastResult

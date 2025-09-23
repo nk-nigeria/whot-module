@@ -12,6 +12,8 @@ import (
 	"github.com/nk-nigeria/whot-module/entity"
 	"github.com/nk-nigeria/whot-module/message_queue"
 	mockcodegame "github.com/nk-nigeria/whot-module/mock_code_game"
+	"github.com/nk-nigeria/whot-module/usecase/service"
+	"github.com/nk-nigeria/whot-module/usecase/state_machine"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/nk-nigeria/whot-module/api"
@@ -101,6 +103,8 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 	// })
 
 	entity.BotLoader = bot.NewBotLoader(db, define.WhotGame.String(), 75000)
+	botIntegration := service.NewWhotBotIntegration(db)
+	state_machine.SetGlobalBotIntegration(botIntegration)
 
 	if err := api.RegisterSessionEvents(db, nk, initializer); err != nil {
 		return err

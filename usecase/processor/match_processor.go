@@ -536,21 +536,22 @@ func (m *processor) calcRewardForUserPlaying(ctx context.Context, nk runtime.Nak
 		}
 		percentFee := percentFreeGame
 
-		fee := int64(s.Label.MarkUnit) / 100 * int64(percentFee)
-		balance.AmountChipAdd = int64(uf.WinFactor * float64(s.Label.MarkUnit))
-		if (balance.AmountChipAdd) > 0 {
+		if (uf.WinFactor) > 0 {
 			// win
-			balance.AmountChipCurrent = balance.AmountChipBefore + balance.AmountChipAdd - fee
+			balance.AmoutChipFee = int64(s.Label.MarkUnit) / 100 * int64(percentFee)
+			balance.AmoutChipAddPrefee = int64(uf.WinFactor * float64(s.Label.MarkUnit))
+			balance.AmountChipAdd = balance.AmoutChipAddPrefee - balance.AmoutChipFee
 			listFeeGame = append(listFeeGame, entity.FeeGame{
 				UserID: balance.UserId,
-				Fee:    fee,
+				Fee:    balance.AmoutChipFee,
 			})
 		} else {
 			// lose
-			balance.AmountChipCurrent = balance.AmountChipBefore + balance.AmountChipAdd
+			balance.AmountChipAdd = int64(uf.WinFactor * float64(s.Label.MarkUnit))
 		}
+		balance.AmountChipCurrent = balance.AmountChipBefore + balance.AmountChipAdd
 		balanceResult.Updates = append(balanceResult.Updates, balance)
-		logger.Info("update user %v, fee %d change %s", uf.UserId, fee, balance)
+		logger.Info("update user %v, change %s", uf.UserId, balance)
 	}
 	cgbdb.AddNewMultiFeeGame(ctx, logger, db, listFeeGame)
 	return &balanceResult
