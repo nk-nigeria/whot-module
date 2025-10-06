@@ -84,6 +84,7 @@ func (m *processor) ProcessNewGame(logger runtime.Logger, dispatcher runtime.Mat
 
 func (m *processor) UpdateTurn(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) {
 	timeTurn := s.TimeTurn
+	s.IsAutoPlay = false
 	if entity.BotLoader.IsBot(s.CurrentTurn) {
 		botPresence, ok := s.GetPresence(s.CurrentTurn).(*bot.BotPresence)
 		if ok {
@@ -105,6 +106,7 @@ func (m *processor) UpdateTurn(logger runtime.Logger, dispatcher runtime.MatchDi
 		// Nếu là user đang bật trạng thái autoplay thì server tự đánh.
 		if s.PresencesNoInteract[s.CurrentTurn] {
 			timeTurn = 1
+			s.IsAutoPlay = true
 		} else {
 			s.SetUserNotInteract(s.CurrentTurn, true)
 		}
@@ -342,7 +344,11 @@ func (m *processor) CheckAndHandleTurnTimeout(ctx context.Context, logger runtim
 
 	logger.Info("User %s did not interact in time, auto-playing", userID)
 	s.TurnExpireAt = 0
-	m.HandleAutoPlay(logger, dispatcher, s)
+	if s.IsAutoPlay {
+		m.HandleAutoPlay(logger, dispatcher, s)
+	} else {
+		m.DrawCard(logger, dispatcher, s, nil)
+	}
 }
 
 func (m *processor) HandleAutoPlay(logger runtime.Logger, dispatcher runtime.MatchDispatcher, s *entity.MatchState) bool {

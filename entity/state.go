@@ -71,6 +71,7 @@ type MatchState struct {
 	TurnReadyAt float64
 
 	//time turn play
+	IsAutoPlay   bool
 	TimeTurn     int
 	TurnExpireAt int64
 
