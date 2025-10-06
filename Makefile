@@ -3,13 +3,11 @@ APP_NAME=whot_plugin.so
 APP_PATH=$(PWD)
 NAKAMA_VER=3.27.0
 
-update-submodule-dev:
-	go get github.com/nk-nigeria/cgp-common@develop
-update-submodule-stg:
-	git checkout staging && git pull
-	git submodule update --init
-	git submodule update --remote
-	cd ./cgp-common && git checkout staging && git pull && cd ..
+GOPRIVATE="github.com/nk-nigeria/*"
+
+update-common:
+	go get github.com/nk-nigeria/cgp-common
+update-common-stg:
 	go get github.com/nk-nigeria/cgp-common@staging
 
 cpdev:
@@ -43,9 +41,9 @@ syncstg:
 	rsync -aurv --delete ./bin/${APP_NAME} root@cgpdev:/root/cgp-server/dist/data/modules/bin
 	ssh root@cgpdev 'cd /root/cgp-server && docker restart nakama'
 
-dev: update-submodule-dev build
+dev: update-common build
 
-stg: update-submodule-stg build
+stg: update-common-stg build
 
 v3.19.0: 
 	git submodule update --init

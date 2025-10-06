@@ -1,7 +1,5 @@
 module github.com/nk-nigeria/whot-module
 
-replace github.com/nk-nigeria/cgp-common => ./cgp-common
-
 go 1.24.3
 
 require (
@@ -12,7 +10,7 @@ require (
 	github.com/jackc/pgtype v1.14.0
 	github.com/lib/pq v1.10.9
 	github.com/nats-io/nats.go v1.42.0
-	github.com/nk-nigeria/cgp-common v0.0.0-20250617081458-27c8725f03a9
+	github.com/nk-nigeria/cgp-common v0.0.0-20251006080151-9907e029331c
 	github.com/qmuntal/stateless v1.6.8
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
